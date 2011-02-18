@@ -18,6 +18,7 @@ import hudson.util.ListBoxModel;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -47,21 +48,8 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class MultiSCM extends SCM {
 
-    private final String name;
-
-    // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
-    @DataBoundConstructor
-    public MultiSCM(String name) {
-        this.name = name;
+    public MultiSCM() {
     }
-
-    /**
-     * We'll use this from the <tt>config.jelly</tt>.
-     */
-    public String getName() {
-        return name;
-    }
-
 
     @Override
 	public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build,
@@ -94,7 +82,10 @@ public class MultiSCM extends SCM {
 		return null;
 	}
 
-
+	public List<SCMDescriptor<?>> getScms() {
+		return new ArrayList<SCMDescriptor<?>>();
+	}
+    	
 	/**
 	 * Descriptor for {@link MultiSCM}. Used as a singleton.
 	 * The class is marked as public so that it can be accessed from views.
@@ -111,31 +102,20 @@ public class MultiSCM extends SCM {
 			// TODO Auto-generated constructor stub
 		}
 
-		public ListBoxModel doFillScmPluginsItems() {
-	    	ListBoxModel m = new ListBoxModel();
-	    	
-	    	List<SCMDescriptor<?>> scms = SCM.all();
-	    	
-	    	for(SCMDescriptor<?> scm : scms) {
+		public List<SCMDescriptor<?>> getApplicableSCMs() {
+	    	List<SCMDescriptor<?>> scms = new ArrayList<SCMDescriptor<?>>();
+	    		    	
+	    	for(SCMDescriptor<?> scm : SCM.all()) {
 	    		// Filter MultiSCM itself from the list of choices.
 	    		// Theoretically it might work, but I see no practical reason to allow
 	    		// nested MultiSCM configurations.
 	    		if(!(scm instanceof DescriptorImpl) && !(scm instanceof NullSCM.DescriptorImpl))
-	    			m.add(scm.getDisplayName());
+	    			scms.add(scm);
 	    	}
 	    	
-	    	return m;
+	    	return scms;
 	    }
-	    
-		/**
-	     * To persist global configuration information,
-	     * simply store it in a field and call save().
-	     *
-	     * <p>
-	     * If you don't want fields to be persisted, use <tt>transient</tt>.
-	     */
-	    private boolean useFrench;
-	
+		
 	    /**
 	     * Performs on-the-fly validation of the form field 'name'.
 	     *
@@ -163,19 +143,11 @@ public class MultiSCM extends SCM {
 	    public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
 	        // To persist global configuration information,
 	        // set that to properties and call save().
-	        useFrench = formData.getBoolean("useFrench");
 	        // ^Can also use req.bindJSON(this, formData);
 	        //  (easier when there are many fields; need set* methods for this, like setUseFrench)
 	        save();
 	        return super.configure(req,formData);
-	    }
-	
-	    /**
-	     * This method returns true if the global configuration says we should speak French.
-	     */
-	    public boolean useFrench() {
-	        return useFrench;
-	    }
+	    }	
 	}
 }
 
