@@ -1,0 +1,29 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+
+    See global.jelly for a general discussion about jelly script.
+  -->
+
+  <!--
+    Creates a text field that shows the value of the "name" property.
+    When submitted, it will be passed to the corresponding constructor parameter.
+  -->
+    <f:entry title="SCMs">
+    <f:repeatable var="loc" name="locations" items="${instance.locations}" >
+      <table width="100%">
+	    <f:entry title="SCM Provider"
+	      description="Choose the SCM to use"
+	      field = "scmPlugins">
+	      <!--
+	        we'll have on input field. In HTML, single "namespace" is shared between
+	        all form components in one <form>, so we need to choose a name that doesn't
+	        collide with other plugins. The 'descriptor' variable represents our descriptor
+	        object, so we use that to determine the initial value for this form.
+	      -->
+	      <f:select />
+	    </f:entry>
+      </table>
+    </f:repeatable>
+  </f:entry>  
+</j:jelly>
