@@ -36,23 +36,6 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 
-/**
- * Sample {@link Builder}.
- *
- * <p>
- * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link MultiSCM} is created. The created
- * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
- * to remember the configuration.
- *
- * <p>
- * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)} method
- * will be invoked. 
- *
- * @author Kohsuke Kawaguchi
- */
 public class MultiSCM extends SCM implements Saveable {
 
     private DescribableList<SCM,Descriptor<SCM>> scms =
@@ -120,14 +103,6 @@ public class MultiSCM extends SCM implements Saveable {
 		return new MultiSCMChangeLogParser(scms.toList());
 	}
 
-	/**
-	 * Descriptor for {@link MultiSCM}. Used as a singleton.
-	 * The class is marked as public so that it can be accessed from views.
-	 *
-	 * <p>
-	 * See <tt>views/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
-	 * for the actual HTML fragment for the configuration screen.
-	 */
 	@Extension // this marker indicates Hudson that this is an implementation of an extension point.
 	public static final class DescriptorImpl extends SCMDescriptor<MultiSCM> {
 		
@@ -159,10 +134,6 @@ public class MultiSCM extends SCM implements Saveable {
 	
 	    @Override
 	    public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-	        // To persist global configuration information,
-	        // set that to properties and call save().
-	        // ^Can also use req.bindJSON(this, formData);
-	        //  (easier when there are many fields; need set* methods for this, like setUseFrench)
 	        save();
 	        return super.configure(req,formData);
 	    }
