@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:forEach var="wrapper" items="${it.changeLogSetWrappers}">
+  	<h2>Changes from <st:out value="${wrapper}" /></h2>
+  		<st:include page="index.jelly" class="${wrapper.handlerClass}" it="${wrapper}"/>
+  </j:forEach>
+</j:jelly>

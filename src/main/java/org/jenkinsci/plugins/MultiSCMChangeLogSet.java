@@ -2,6 +2,7 @@ package org.jenkinsci.plugins;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,19 +11,78 @@ import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 
-import org.jenkinsci.plugins.MultiSCMChangeLogSet.MultiSCMChangeLog;
+public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 
-public class MultiSCMChangeLogSet extends ChangeLogSet<MultiSCMChangeLog> {
-
-	private final List<MultiSCMChangeLog> changes;
+	private final HashMap<String, ChangeLogSetWrapper> changes;
 	
 	protected MultiSCMChangeLogSet(AbstractBuild<?, ?> build) {
 		super(build);
-		changes = new ArrayList<MultiSCMChangeLog>();
+		changes = new HashMap<String, ChangeLogSetWrapper>();
 	}
 
-	public Iterator<MultiSCMChangeLog> iterator() {
-		return changes.iterator();
+	private static class ChangeLogSetWrapper {
+		private AbstractBuild build;
+		private List<Entry> logs;
+		private Class clazz;
+		private String friendlyName;
+		
+		public ChangeLogSetWrapper(AbstractBuild build, String friendlyName, Class handler) {
+			this.build = build;
+			this.logs = new ArrayList<Entry>();
+			this.clazz = handler;
+		}
+		
+		public AbstractBuild getBuild() {
+			return build;
+		}
+		
+		public Class getHandlerClass() {
+			return clazz;
+		}
+		
+		public List<Entry> getLogs() {
+			return logs;
+		}
+
+		public void addChanges(ChangeLogSet<? extends Entry> cls) {
+			for(Entry e : cls)
+				logs.add(e);
+		}
+	}
+		
+	private static class MultiSCMChangeLogSetIterator implements Iterator<Entry> {
+
+		MultiSCMChangeLogSet set;
+		Iterator<String> scmIter = null;
+		String currentScm = null;
+		Iterator<Entry> logIter = null;
+
+		public MultiSCMChangeLogSetIterator(MultiSCMChangeLogSet set) {
+			this.set = set;
+			scmIter = set.changes.keySet().iterator();
+		}
+		
+		public boolean hasNext() {
+			if(logIter == null || !logIter.hasNext())
+				return scmIter.hasNext();
+			return true;
+		}
+
+		public Entry next() {
+			if(logIter == null || !logIter.hasNext()) {
+				currentScm = scmIter.next();
+				logIter = set.changes.get(currentScm).logs.iterator();
+			}			
+			return logIter.next();
+		}
+
+		public void remove() {
+			throw new UnsupportedOperationException("Cannot remove changeset items");
+		}		
+	}
+	
+	public Iterator<Entry> iterator() {
+		return new MultiSCMChangeLogSetIterator(this);
 	}
 
 	@Override
@@ -30,33 +90,18 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<MultiSCMChangeLog> {
 		return changes.isEmpty();
 	}
 	
-	public static class MultiSCMChangeLog extends ChangeLogSet.Entry {
-		
-		ChangeLogSet.Entry contained;
-		
-		public MultiSCMChangeLog(ChangeLogSet.Entry containedEntry) {
-			contained = containedEntry;
+	public void add(String scmClass, String scmFriendlyName, ChangeLogSet<? extends Entry> cls) {
+		if(!cls.isEmptySet()) {
+			ChangeLogSetWrapper wrapper = changes.get(scmClass);
+			if(wrapper == null) {
+				wrapper = new ChangeLogSetWrapper(build, scmFriendlyName, cls.getClass());
+				changes.put(scmClass, wrapper);
+			}
+			wrapper.addChanges(cls);
 		}
-
-		@Override
-		public String getMsg() {
-			return contained.getMsg();
-		}
-
-		@Override
-		public User getAuthor() {
-			return contained.getAuthor();
-		}
-
-		@Override
-		public Collection<String> getAffectedPaths() {
-			return contained.getAffectedPaths();
-		}
-		
 	}
-
-	public void add(String scmClass, ChangeLogSet<? extends Entry> cls) {
-		for(ChangeLogSet.Entry e : cls)
-		changes.add(new MultiSCMChangeLog(e));
+	
+	public Collection<ChangeLogSetWrapper> getChangeLogSetWrappers() {
+		return changes.values();
 	}
 }

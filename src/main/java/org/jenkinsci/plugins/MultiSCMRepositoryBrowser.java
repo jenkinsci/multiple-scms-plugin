@@ -1,18 +1,17 @@
 package org.jenkinsci.plugins;
 
+import hudson.scm.ChangeLogSet;
+import hudson.scm.RepositoryBrowser;
+
 import java.io.IOException;
 import java.net.URL;
 
-import org.jenkinsci.plugins.MultiSCMChangeLogSet.MultiSCMChangeLog;
-
-import hudson.scm.RepositoryBrowser;
-
-public class MultiSCMRepositoryBrowser extends RepositoryBrowser<MultiSCMChangeLog> {
+public class MultiSCMRepositoryBrowser extends RepositoryBrowser<ChangeLogSet.Entry> {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public URL getChangeSetLink(MultiSCMChangeLog changeSet) throws IOException {
+	public URL getChangeSetLink(ChangeLogSet.Entry changeSet) throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}

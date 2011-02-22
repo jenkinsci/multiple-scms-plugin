@@ -1,11 +1,16 @@
 package org.jenkinsci.plugins;
 
+import hudson.model.AbstractBuild;
+import hudson.scm.ChangeLogParser;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,19 +19,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.digester.Digester;
-import org.apache.commons.io.FileUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
-import hudson.scm.ChangeLogParser;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
-import hudson.scm.SCM;
-import hudson.util.Digester2;
 
 public class MultiSCMChangeLogParser extends ChangeLogParser {
 
@@ -34,22 +29,25 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 	public static final String SUB_LOG_TAG = "sub-log";
 	
 	private final Map<String, ChangeLogParser> scmLogParsers;	
+	private final Map<String, String> scmDisplayNames;	
 	
 	public MultiSCMChangeLogParser(List<SCM> scms) {
 		scmLogParsers = new HashMap<String, ChangeLogParser>();
+		scmDisplayNames = new HashMap<String, String>();
 		for(SCM scm : scms) {
 			if(!scmLogParsers.containsKey(scm.getClass().getName())) {
 				scmLogParsers.put(scm.getClass().getName(), scm.createChangeLogParser());
+				scmDisplayNames.put(scm.getClass().getName(), scm.getDescriptor().getDisplayName());
 			}
 		}
 	}
 	
 	private class LogSplitter extends DefaultHandler {
 
-		private final MultiSCMChangeLogSet changeLogs;		
+		private final MultiSCMChangeLogSet changeLogs;
 		private final AbstractBuild build;
-		private final File tempFile;		
-		private OutputStreamWriter outputStream;		
+		private final File tempFile;
+		private OutputStreamWriter outputStream;
 		private String scmClass;
 		
 		public LogSplitter(AbstractBuild build, String tempFilePath) {
@@ -57,7 +55,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			this.tempFile= new File(tempFilePath);
 			this.build = build;
 		}
-				
+		
 		@Override
 		public void characters(char[] data, int startIndex, int length)
 				throws SAXException {
@@ -77,6 +75,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			if(qName.compareTo(SUB_LOG_TAG) == 0) {
 				FileOutputStream fos;
 				try {
+					scmClass = attrs.getValue("scm");
 					fos = new FileOutputStream(tempFile);
 				} catch (FileNotFoundException e) {
 					throw new SAXException("could not create temp changelog file", e);
@@ -96,7 +95,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 					ChangeLogParser parser = scmLogParsers.get(scmClass);
 					if(parser != null) {
 						ChangeLogSet<? extends ChangeLogSet.Entry> cls = parser.parse(build, tempFile);
-						changeLogs.add(scmClass, cls);
+						changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
 						
 					}
 				} catch (IOException e) {
@@ -125,9 +124,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		}
 
 		LogSplitter splitter = new LogSplitter(build, changelogFile.getPath() + ".temp2");
-
-	    parser.parse(changelogFile, splitter);
-	    
+	    parser.parse(changelogFile, splitter);	    
 	    return splitter.getChangeLogSets();
 	}
 
