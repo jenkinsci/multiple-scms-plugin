@@ -10,29 +10,24 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.PollingResult;
+import hudson.scm.PollingResult.Change;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.tasks.Builder;
 import hudson.util.DescribableList;
-import hudson.util.FormValidation;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletException;
-
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 
@@ -55,8 +50,15 @@ public class MultiSCM extends SCM implements Saveable {
 	public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build,
 			Launcher launcher, TaskListener listener) throws IOException,
 			InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+
+    	MultiSCMRevisionState revisionStates = new MultiSCMRevisionState();
+    	
+		for(SCM scm : scms) {
+			SCMRevisionState scmState = scm.calcRevisionsFromBuild(build, launcher, listener);
+			revisionStates.add(scm.getClass().getName(), scmState);
+		}
+		
+		return revisionStates;
 	}
 
 	@Override
@@ -64,8 +66,20 @@ public class MultiSCM extends SCM implements Saveable {
 			AbstractProject<?, ?> project, Launcher launcher,
 			FilePath workspace, TaskListener listener, SCMRevisionState baseline)
 			throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		MultiSCMRevisionState baselineStates = baseline instanceof MultiSCMRevisionState ? (MultiSCMRevisionState) baseline : null;
+		MultiSCMRevisionState currentStates = new MultiSCMRevisionState();		
+
+		Change overallChange = Change.NONE;
+		
+		for(SCM scm : scms) {
+			SCMRevisionState scmBaseline = baselineStates != null ? baselineStates.get(scm.getClass().getName()) : null;
+			PollingResult scmResult = scm.poll(project, launcher, workspace, listener, scmBaseline != null ? scmBaseline : SCMRevisionState.NONE);			
+			currentStates.add(scm.getClass().getName(), scmResult.remote);
+			if(scmResult.change.compareTo(overallChange) > 0)
+				overallChange = scmResult.change;
+		}
+		return new PollingResult(baselineStates, currentStates, overallChange);
 	}
 
 	@Override
@@ -73,11 +87,13 @@ public class MultiSCM extends SCM implements Saveable {
 			FilePath workspace, BuildListener listener, File changelogFile)
 			throws IOException, InterruptedException {
 
+		build.addAction(new MultiSCMRevisionState());
+		
 		FileOutputStream logStream = new FileOutputStream(changelogFile);
 		OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
 		logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		
-		boolean checkoutOK = true;		
+		boolean checkoutOK = true;
 		for(SCM scm : scms) {
 			String changeLogPath = changelogFile.getPath() + ".temp";
 			File subChangeLog = new File(changeLogPath);
@@ -89,7 +105,7 @@ public class MultiSCM extends SCM implements Saveable {
 					scm.getClass().getName(),
 					subLogText,
 					MultiSCMChangeLogParser.SUB_LOG_TAG));
-			
+
 			subChangeLog.delete();
 		}
 		logWriter.write(String.format("</%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
@@ -103,6 +119,11 @@ public class MultiSCM extends SCM implements Saveable {
 		return new MultiSCMChangeLogParser(scms.toList());
 	}
 
+	public void save() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
 	@Extension // this marker indicates Hudson that this is an implementation of an extension point.
 	public static final class DescriptorImpl extends SCMDescriptor<MultiSCM> {
 		
@@ -111,7 +132,7 @@ public class MultiSCM extends SCM implements Saveable {
 			// TODO Auto-generated constructor stub
 		}
 
-		public List<SCMDescriptor<?>> getApplicableSCMs(AbstractProject project) {
+		public List<SCMDescriptor<?>> getApplicableSCMs(AbstractProject<?, ?> project) {
 	    	List<SCMDescriptor<?>> scms = new ArrayList<SCMDescriptor<?>>();
 	    		    	
 	    	for(SCMDescriptor<?> scm : SCM._for(project)) {
@@ -144,11 +165,6 @@ public class MultiSCM extends SCM implements Saveable {
 			return super.newInstance(req, formData);
 		}
 	    
-	}
-
-	public void save() throws IOException {
-		// TODO Auto-generated method stub
-		
 	}
 }
 
