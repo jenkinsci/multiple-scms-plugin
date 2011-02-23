@@ -20,7 +20,7 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 		changes = new HashMap<String, ChangeLogSetWrapper>();
 	}
 
-	private static class ChangeLogSetWrapper {
+	public static class ChangeLogSetWrapper {
 		private AbstractBuild build;
 		private List<Entry> logs;
 		private Class clazz;
@@ -30,6 +30,7 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 			this.build = build;
 			this.logs = new ArrayList<Entry>();
 			this.clazz = handler;
+			this.friendlyName = friendlyName;
 		}
 		
 		public AbstractBuild getBuild() {
@@ -38,6 +39,10 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 		
 		public Class getHandlerClass() {
 			return clazz;
+		}
+
+		public String getName() {
+			return friendlyName;
 		}
 		
 		public List<Entry> getLogs() {

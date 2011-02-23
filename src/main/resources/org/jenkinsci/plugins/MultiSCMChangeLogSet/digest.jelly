@@ -12,7 +12,7 @@
   		<st:out value="${wrapper.name}"/>
   		</p>
   		<ol>      
-  			<j:forEach var="cs" items="${it.getScmsChanges(csscm)}">
+  			<j:forEach var="cs" items="${wrapper.logs}">
 	          <li>
 	            ${cs.msgAnnotated}
 	            (<a href="changes#detail${loop.index}">detail</a>
