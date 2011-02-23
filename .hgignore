@@ -1,2 +1,4 @@
 glob:target/*
 glob:work/*
+glob:.classpath
+glob:.project
