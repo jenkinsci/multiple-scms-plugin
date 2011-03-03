@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.multiplescms;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;

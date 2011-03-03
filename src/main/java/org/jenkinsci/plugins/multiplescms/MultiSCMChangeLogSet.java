@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.multiplescms;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.multiplescms;
 
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogParser;
