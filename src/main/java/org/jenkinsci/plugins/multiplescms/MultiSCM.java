@@ -14,6 +14,7 @@ import hudson.scm.PollingResult.Change;
 import hudson.scm.SCMDescriptor;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.NullSCM;
+import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.util.DescribableList;
 
@@ -102,7 +103,7 @@ public class MultiSCM extends SCM implements Saveable {
 			String subLogText = FileUtils.readFileToString(subChangeLog);
 			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
 					MultiSCMChangeLogParser.SUB_LOG_TAG,
-					scm.getType(),
+					MultiSCMRevisionState.keyFor(scm, workspace, build),
 					subLogText,
 					MultiSCMChangeLogParser.SUB_LOG_TAG));
 
@@ -116,13 +117,17 @@ public class MultiSCM extends SCM implements Saveable {
 
 	@Override
 	public ChangeLogParser createChangeLogParser() {
-		return new MultiSCMChangeLogParser(scms.toList());
+		return new MultiSCMChangeLogParser();
 	}
 
 	public void save() throws IOException {
 		// TODO Auto-generated method stub
 		
 	}
+
+    @Override public RepositoryBrowser<?> getBrowser() {
+        return new MultiSCMRepositoryBrowser();
+    }
 
 	@Extension // this marker indicates Hudson that this is an implementation of an extension point.
 	public static final class DescriptorImpl extends SCMDescriptor<MultiSCM> {
