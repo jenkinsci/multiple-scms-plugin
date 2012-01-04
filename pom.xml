@@ -46,4 +46,13 @@
       <developerConnection>scm:git:git@github.com:jenkinsci/multiple-scms-plugin.git</developerConnection>
   </scm>
 
-  </project>
+  <dependencies>
+    <dependency>
+      <groupId>findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>1.0.0</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+
+</project>

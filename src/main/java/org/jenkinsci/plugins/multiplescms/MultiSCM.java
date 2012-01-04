@@ -55,7 +55,7 @@ public class MultiSCM extends SCM implements Saveable {
     	
 		for(SCM scm : scms) {
 			SCMRevisionState scmState = scm.calcRevisionsFromBuild(build, launcher, listener);
-			revisionStates.add(scm.getClass().getName(), scmState);
+			revisionStates.add(scm, build.getWorkspace(), build, scmState);
 		}
 		
 		return revisionStates;
@@ -73,9 +73,9 @@ public class MultiSCM extends SCM implements Saveable {
 		Change overallChange = Change.NONE;
 		
 		for(SCM scm : scms) {
-			SCMRevisionState scmBaseline = baselineStates != null ? baselineStates.get(scm.getClass().getName()) : SCMRevisionState.NONE;
-			PollingResult scmResult = scm.poll(project, launcher, workspace, listener, scmBaseline);			
-			currentStates.add(scm.getClass().getName(), scmResult.remote);
+			SCMRevisionState scmBaseline = baselineStates != null ? baselineStates.get(scm, workspace, null) : null;
+			PollingResult scmResult = scm.poll(project, launcher, workspace, listener, scmBaseline != null ? scmBaseline : SCMRevisionState.NONE);
+			currentStates.add(scm, workspace, null, scmResult.remote);
 			if(scmResult.change.compareTo(overallChange) > 0)
 				overallChange = scmResult.change;
 		}
@@ -102,7 +102,7 @@ public class MultiSCM extends SCM implements Saveable {
 			String subLogText = FileUtils.readFileToString(subChangeLog);
 			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
 					MultiSCMChangeLogParser.SUB_LOG_TAG,
-					scm.getClass().getName(),
+					scm.getType(),
 					subLogText,
 					MultiSCMChangeLogParser.SUB_LOG_TAG));
 
