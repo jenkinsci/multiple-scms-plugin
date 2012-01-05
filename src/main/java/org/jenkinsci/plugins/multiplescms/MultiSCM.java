@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -94,23 +95,34 @@ public class MultiSCM extends SCM implements Saveable {
 		}
 		return new PollingResult(baselineStates, currentStates, overallChange);
 	}
-
+	
 	@Override
 	public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher,
 			FilePath workspace, BuildListener listener, File changelogFile)
 			throws IOException, InterruptedException {
 
-		build.addAction(new MultiSCMRevisionState());
+		MultiSCMRevisionState revisionState = new MultiSCMRevisionState();		
+		build.addAction(revisionState);
+		
+		HashSet<Object> scmActions = new HashSet<Object>();
 		
 		FileOutputStream logStream = new FileOutputStream(changelogFile);
 		OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
 		logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		
 		boolean checkoutOK = true;
-		for(SCM scm : scms) {
+		for(SCM scm : scms) {			
 			String changeLogPath = changelogFile.getPath() + ".temp";
 			File subChangeLog = new File(changeLogPath);
 			checkoutOK = scm.checkout(build, launcher, workspace, listener, subChangeLog) && checkoutOK;
+			
+			List<Action> actions = build.getActions();
+			for(Action a : actions) {
+				if(!scmActions.contains(a) && a instanceof SCMRevisionState) {
+					scmActions.add(a);
+					revisionState.add(scm.getClass().getName(), (SCMRevisionState) a);
+				}
+			}
 			
 			String subLogText = FileUtils.readFileToString(subChangeLog);
 			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
