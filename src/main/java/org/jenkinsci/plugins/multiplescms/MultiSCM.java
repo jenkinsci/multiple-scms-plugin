@@ -2,12 +2,13 @@ package org.jenkinsci.plugins.multiplescms;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
+import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.PollingResult;
 import hudson.scm.PollingResult.Change;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONObject;
 
@@ -61,6 +63,17 @@ public class MultiSCM extends SCM implements Saveable {
 		return revisionStates;
 	}
 
+    @Override
+    public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
+    	for(SCM scm : scms) {
+    		try {
+    			scm.buildEnvVars(build, env);
+    		}
+    		catch(NullPointerException npe)
+    		{}
+    	}
+    }
+    
 	@Override
 	protected PollingResult compareRemoteRevisionWith(
 			AbstractProject<?, ?> project, Launcher launcher,
