@@ -140,6 +140,17 @@ public class MultiSCM extends SCM implements Saveable {
 	}
 
 	@Override
+	public FilePath[] getModuleRoots(FilePath workspace, AbstractBuild build) {
+		ArrayList<FilePath> paths = new ArrayList<FilePath>();
+		for(SCM scm : scms) {
+			FilePath[] p = scm.getModuleRoots(workspace, build); 
+			for(FilePath p2 : p)
+				paths.add(p2);
+		}
+		return paths.toArray(new FilePath[paths.size()]);
+	}
+	
+	@Override
 	public ChangeLogParser createChangeLogParser() {
 		return new MultiSCMChangeLogParser(scms.toList());
 	}
