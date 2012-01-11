@@ -4,7 +4,6 @@
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>1.399</version><!-- which version of Jenkins is this plugin built against? -->
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <groupId>org.jenkins-ci.plugins</groupId>
@@ -22,7 +21,19 @@
       <email>kbell6397@gmail.com</email>
     </developer>
   </developers>
-  
+
+  <repositories>
+    <repository> <!-- bootstrapping: need to find parent POM -->
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </repository>
+  </repositories>
+
+  <properties>
+    <netbeans.hint.jdkPlatform>JDK_1.6</netbeans.hint.jdkPlatform> <!-- HUDSON-8942 / JENKINS-10490 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <licenses>
     <license>
       <name>MIT license</name>
@@ -35,4 +46,13 @@
       <developerConnection>scm:git:git@github.com:jenkinsci/multiple-scms-plugin.git</developerConnection>
   </scm>
 
-  </project>
+  <dependencies>
+    <dependency>
+      <groupId>findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>1.0.0</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+
+</project>

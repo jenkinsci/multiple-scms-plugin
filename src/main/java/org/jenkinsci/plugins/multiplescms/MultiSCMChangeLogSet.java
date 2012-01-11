@@ -7,17 +7,20 @@ import java.util.Iterator;
 import java.util.List;
 
 import hudson.model.AbstractBuild;
-import hudson.model.User;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 
 	private final HashMap<String, ChangeLogSetWrapper> changes;
+    private final Set<String> kinds;
 	
 	protected MultiSCMChangeLogSet(AbstractBuild<?, ?> build) {
 		super(build);
 		changes = new HashMap<String, ChangeLogSetWrapper>();
+        kinds = new HashSet<String>();
 	}
 
 	public static class ChangeLogSetWrapper {
@@ -104,9 +107,19 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 			}
 			wrapper.addChanges(cls);
 		}
+        kinds.add(cls.getKind());
 	}
 	
 	public Collection<ChangeLogSetWrapper> getChangeLogSetWrappers() {
 		return changes.values();
 	}
+
+    @Override public String getKind() {
+        if (kinds.size() == 1) {
+            return kinds.iterator().next();
+        } else {
+            return "Multi" + kinds;
+        }
+    }
+
 }
