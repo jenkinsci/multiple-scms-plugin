@@ -11,9 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -27,22 +26,14 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 
 	public static final String ROOT_XML_TAG = "multi-scm-log";
 	public static final String SUB_LOG_TAG = "sub-log";
-	
-	private final Map<String, ChangeLogParser> scmLogParsers;	
-	private final Map<String, String> scmDisplayNames;	
-	
-	public MultiSCMChangeLogParser(List<SCM> scms) {
-		scmLogParsers = new HashMap<String, ChangeLogParser>();
-		scmDisplayNames = new HashMap<String, String>();
-		for(SCM scm : scms) {
-            String key = scm.getType();
-			if(!scmLogParsers.containsKey(key)) {
-				scmLogParsers.put(key, scm.createChangeLogParser());
-				scmDisplayNames.put(key, scm.getDescriptor().getDisplayName());
-			}
-		}
-	}
-	
+
+    @Deprecated // deser compat only
+	private Map<String, ChangeLogParser> scmLogParsers;
+    @Deprecated
+	private Map<String, String> scmDisplayNames;
+
+    static final Map<ChangeLogSet<?>,SCM> scmBySet = new WeakHashMap<ChangeLogSet<?>,SCM>();
+
 	private class LogSplitter extends DefaultHandler {
 
 		private final MultiSCMChangeLogSet changeLogs;
@@ -102,12 +93,14 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 				try {
 					outputStream.close();
 					outputStream = null;
-					ChangeLogParser parser = scmLogParsers.get(scmClass);
-					if(parser != null) {
-						ChangeLogSet<? extends ChangeLogSet.Entry> cls = parser.parse(build, tempFile);
-						changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
-						
-					}
+                    for (SCM scm : ((MultiSCM) build.getProject().getScm()).getConfiguredSCMs()) {
+                        if (scmClass.equals(MultiSCMRevisionState.keyFor(scm, build.getWorkspace(), build))) {
+                            ChangeLogSet<? extends Entry> result = scm.createChangeLogParser().parse(build, tempFile);
+                            scmBySet.put(result, scm);
+                            changeLogs.add(scm, result);
+                            break;
+                        }
+                    }
 				} catch (IOException e) {
 					throw new SAXException("could not close temp changelog file", e);
 				}
@@ -119,7 +112,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			return changeLogs;
 		}		
 	}
-	
+
 	@Override
 	public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile)
 		throws IOException, SAXException {

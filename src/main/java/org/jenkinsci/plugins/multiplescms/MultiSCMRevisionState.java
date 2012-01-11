@@ -29,7 +29,7 @@ public class MultiSCMRevisionState extends SCMRevisionState {
 		return state;
 	}
 
-    private static String keyFor(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) { // JENKINS-12298
+    static String keyFor(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) { // JENKINS-12298
         StringBuilder b = new StringBuilder(scm.getType());
         for (FilePath root : scm.getModuleRoots(ws, build)) {
             b.append(root.getRemote().substring(ws.getRemote().length()));

@@ -9,29 +9,32 @@ import java.util.List;
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
+public class MultiSCMChangeLogSet extends ChangeLogSet<MultiSCMChangeLogEntry> {
 
-	private final HashMap<String, ChangeLogSetWrapper> changes;
+	private final HashMap<SCM, ChangeLogSetWrapper> changes;
     private final Set<String> kinds;
 	
 	protected MultiSCMChangeLogSet(AbstractBuild<?, ?> build) {
 		super(build);
-		changes = new HashMap<String, ChangeLogSetWrapper>();
+		changes = new HashMap<SCM, ChangeLogSetWrapper>();
         kinds = new HashSet<String>();
 	}
 
 	public static class ChangeLogSetWrapper {
 		private AbstractBuild build;
 		private List<Entry> logs;
+        private List<MultiSCMChangeLogEntry> multiLogs;
 		private Class clazz;
 		private String friendlyName;
 		
 		public ChangeLogSetWrapper(AbstractBuild build, String friendlyName, Class handler) {
 			this.build = build;
 			this.logs = new ArrayList<Entry>();
+            this.multiLogs = new ArrayList<MultiSCMChangeLogEntry>();
 			this.clazz = handler;
 			this.friendlyName = friendlyName;
 		}
@@ -52,17 +55,21 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 			return logs;
 		}
 
-		public void addChanges(ChangeLogSet<? extends Entry> cls) {
-			for(Entry e : cls)
-				logs.add(e);
+        public List<MultiSCMChangeLogEntry> getMultiLogs() {
+            return multiLogs;
+        }
+
+		public void addChanges(MultiSCMChangeLogEntry multiLog) {
+            logs.add(multiLog.getDelegate());
+            multiLogs.add(multiLog);
 		}
 	}
 		
-	private static class MultiSCMChangeLogSetIterator implements Iterator<Entry> {
+	private class MultiSCMChangeLogSetIterator implements Iterator<MultiSCMChangeLogEntry> {
 
 		MultiSCMChangeLogSet set;
-		Iterator<String> scmIter = null;
-		String currentScm = null;
+		Iterator<SCM> scmIter = null;
+		SCM currentScm = null;
 		Iterator<Entry> logIter = null;
 
 		public MultiSCMChangeLogSetIterator(MultiSCMChangeLogSet set) {
@@ -76,12 +83,12 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 			return true;
 		}
 
-		public Entry next() {
+		public MultiSCMChangeLogEntry next() {
 			if(logIter == null || !logIter.hasNext()) {
 				currentScm = scmIter.next();
 				logIter = set.changes.get(currentScm).logs.iterator();
 			}			
-			return logIter.next();
+			return new MultiSCMChangeLogEntry(currentScm, logIter.next(), build, set);
 		}
 
 		public void remove() {
@@ -89,7 +96,7 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 		}		
 	}
 	
-	public Iterator<Entry> iterator() {
+	public Iterator<MultiSCMChangeLogEntry> iterator() {
 		return new MultiSCMChangeLogSetIterator(this);
 	}
 
@@ -98,14 +105,17 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 		return changes.isEmpty();
 	}
 	
-	public void add(String scmClass, String scmFriendlyName, ChangeLogSet<? extends Entry> cls) {
+	public void add(SCM scm, ChangeLogSet<? extends Entry> cls) {
 		if(!cls.isEmptySet()) {
-			ChangeLogSetWrapper wrapper = changes.get(scmClass);
+			ChangeLogSetWrapper wrapper = changes.get(scm);
 			if(wrapper == null) {
-				wrapper = new ChangeLogSetWrapper(build, scmFriendlyName, cls.getClass());
-				changes.put(scmClass, wrapper);
+                String friendlyName = MultiSCMRevisionState.keyFor(scm, build.getWorkspace(), build).replaceFirst("^\\Q" + scm.getType() + "\\E", scm.getDescriptor().getDisplayName());
+				wrapper = new ChangeLogSetWrapper(build, friendlyName, cls.getClass());
+				changes.put(scm, wrapper);
 			}
-			wrapper.addChanges(cls);
+            for (ChangeLogSet.Entry e : cls) {
+                wrapper.addChanges(new MultiSCMChangeLogEntry(scm, e, build, this));
+            }
 		}
         kinds.add(cls.getKind());
 	}

@@ -12,7 +12,7 @@
   		<st:out value="${wrapper.name}"/>
   		</p>
   		<ol>      
-  			<j:forEach var="cs" items="${wrapper.logs}">
+  			<j:forEach var="cs" items="${wrapper.multiLogs}">
 	          <li>
 	            ${cs.msgAnnotated}
 	            (<a href="changes#detail${loop.index}">detail</a>
