@@ -22,7 +22,11 @@ public class MultiSCMRevisionState extends SCMRevisionState {
 	}
 	
 	public SCMRevisionState get(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) {
-		return revisionStates.get(keyFor(scm, ws, build));
+		SCMRevisionState state = revisionStates.get(keyFor(scm, ws, build));
+		// for backward compatibility with version 0.1, try to get the state using the class name as well
+		if (state == null)
+		    state = revisionStates.get(scm.getClass().getName());
+		return state;
 	}
 
     private static String keyFor(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) { // JENKINS-12298
