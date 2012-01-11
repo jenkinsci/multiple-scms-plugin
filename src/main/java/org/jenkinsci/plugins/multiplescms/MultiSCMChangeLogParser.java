@@ -124,6 +124,9 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 	public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile)
 		throws IOException, SAXException {
 		
+	    if(scmLogParsers == null)
+	        return ChangeLogSet.createEmpty(build);
+
 	      SAXParserFactory factory = SAXParserFactory.newInstance();
 	      factory.setValidating(true);
 	      SAXParser parser;
