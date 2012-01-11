@@ -120,7 +120,7 @@ public class MultiSCM extends SCM implements Saveable {
 			for(Action a : actions) {
 				if(!scmActions.contains(a) && a instanceof SCMRevisionState) {
 					scmActions.add(a);
-					revisionState.add(scm.getClass().getName(), (SCMRevisionState) a);
+					revisionState.add(scm, workspace, build, (SCMRevisionState) a);
 				}
 			}
 			
