@@ -49,6 +49,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		private final AbstractBuild build;
 		private final File tempFile;
 		private OutputStreamWriter outputStream;
+		private boolean newStream;
 		private String scmClass;
 		
 		public LogSplitter(AbstractBuild build, String tempFilePath) {
@@ -63,7 +64,14 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			
 			try {
 				if(outputStream != null) {
+				    if (newStream) {
+				        while(length > 0 && Character.isWhitespace(data[startIndex])) {
+				            startIndex += 1;
+				            length -= 1;
+				        }
+				    }
 					outputStream.write(data, startIndex, length);
+					newStream = false;
 				}
 			} catch (IOException e) {
 				throw new SAXException("Could not write temp changelog file", e);
@@ -77,6 +85,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 				FileOutputStream fos;
 				try {
 					scmClass = attrs.getValue("scm");
+					newStream = true;
 					fos = new FileOutputStream(tempFile);
 				} catch (FileNotFoundException e) {
 					throw new SAXException("could not create temp changelog file", e);
