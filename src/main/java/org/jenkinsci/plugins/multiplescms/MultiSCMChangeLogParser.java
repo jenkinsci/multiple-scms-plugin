@@ -156,10 +156,6 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 
             reader.close();
             writer.close();
-
-            File temp3 = File.createTempFile("jhh", ".tmp");//XXX
-            Files.copy(tempFile, temp3);
-
             tempFile.delete();
 
             if (!temp2.renameTo(tempFile)) {
