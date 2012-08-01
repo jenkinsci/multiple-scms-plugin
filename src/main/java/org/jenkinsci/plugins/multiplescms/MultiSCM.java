@@ -108,7 +108,8 @@ public class MultiSCM extends SCM implements Saveable {
 		
 		FileOutputStream logStream = new FileOutputStream(changelogFile);
 		OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
-		logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
+		logWriter.write(String.format("<%s version=\"%d\">\n", MultiSCMChangeLogParser.ROOT_XML_TAG,
+		        MultiSCMChangeLogParser.LOG_VERSION));
 		
 		boolean checkoutOK = true;
 		for(SCM scm : scms) {			
@@ -125,6 +126,15 @@ public class MultiSCM extends SCM implements Saveable {
 			}
 			
 			String subLogText = FileUtils.readFileToString(subChangeLog);
+
+			/* It's possible for this sublog text to contain the special CDATA-closing "]]>" sequence,
+			 * which breaks if it occurs in the middle of another CDATA section.
+			 * Instead, we turn ]]> into its XML-entity equivalent here, and decode it on the way out.
+			 * This conversion is also nestable, so "]]>" becomes "&93;&93;&gt;".  If that gets "encoded"
+			 * a second time, it then becomes "&amp;93;&amp;93;&amp;gt;", and so on.
+			 */
+			subLogText = subLogText.replace("&", "&amp;").replace("]]>", "&93;&93;&gt;");
+
 			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
 					MultiSCMChangeLogParser.SUB_LOG_TAG,
 					scm.getType(),
