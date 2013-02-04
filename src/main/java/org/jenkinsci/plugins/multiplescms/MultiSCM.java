@@ -123,15 +123,16 @@ public class MultiSCM extends SCM implements Saveable {
 					revisionState.add(scm, workspace, build, (SCMRevisionState) a);
 				}
 			}
-			
-			String subLogText = FileUtils.readFileToString(subChangeLog);
-			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
-					MultiSCMChangeLogParser.SUB_LOG_TAG,
-					scm.getType(),
-					subLogText,
-					MultiSCMChangeLogParser.SUB_LOG_TAG));
+			if (subChangeLog.exists()) {
+				String subLogText = FileUtils.readFileToString(subChangeLog);
+				logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
+						MultiSCMChangeLogParser.SUB_LOG_TAG,
+						scm.getType(),
+						subLogText,
+						MultiSCMChangeLogParser.SUB_LOG_TAG));
 
-			subChangeLog.delete();
+				subChangeLog.delete();
+			}
 		}
 		logWriter.write(String.format("</%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		logWriter.close();
