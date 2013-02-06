@@ -33,7 +33,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 
 	public static final String ROOT_XML_TAG = "multi-scm-log";
 	public static final String SUB_LOG_TAG = "sub-log";
-    public static final int LOG_VERSION = 2;
+	public static final int LOG_VERSION = 2;
 	
 	private final Map<String, ChangeLogParser> scmLogParsers;	
 	private final Map<String, String> scmDisplayNames;	
@@ -93,7 +93,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			if(qName.compareTo(SUB_LOG_TAG) == 0) {
 				FileOutputStream fos;
 				try {
-				    scmClass = attrs.getValue("scm");
+					scmClass = attrs.getValue("scm");
 					newStream = true;
 					fos = new FileOutputStream(tempFile);
 				} catch (FileNotFoundException e) {
@@ -101,13 +101,11 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 				}
 				outputStream = new OutputStreamWriter(fos);
 			} else if (qName.compareTo(ROOT_XML_TAG) == 0) {
-			    String parseVersion = attrs.getValue("version");
+				String parseVersion = attrs.getValue("version");
 
-                if (parseVersion != null) {
-                    scmParseVersion = Integer.parseInt(parseVersion);
-                } else {
-                    scmParseVersion = 1;
-                }
+				if (parseVersion != null) {
+					scmParseVersion = Integer.parseInt(parseVersion);
+				}
 			}
 		}
 
@@ -120,9 +118,9 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 					outputStream.close();
 					outputStream = null;
 
-				if (scmParseVersion >= LOG_VERSION) {
-					decodeNestedCdata(tempFile);
-				}
+					if (scmParseVersion >= LOG_VERSION) {
+						decodeNestedCdata(tempFile);
+					}
 
 					ChangeLogParser parser = scmLogParsers.get(scmClass);
 					if(parser != null) {
@@ -144,24 +142,24 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		 * @throws IOException
 		 * @see {@link MultiSCM#checkout(AbstractBuild, hudson.Launcher, hudson.FilePath, hudson.model.BuildListener, File)}
 		 */
-        private void decodeNestedCdata(File tempFile) throws IOException {
-            File temp2 = File.createTempFile("tempDecode", ".tmp");
-            BufferedReader reader = new BufferedReader(new FileReader(tempFile));
-            PrintWriter writer = new PrintWriter(new FileWriter(temp2));
-            String line;
+		private void decodeNestedCdata(File tempFile) throws IOException {
+			File temp2 = File.createTempFile("tempDecode", ".tmp");
+			BufferedReader reader = new BufferedReader(new FileReader(tempFile));
+			PrintWriter writer = new PrintWriter(new FileWriter(temp2));
+			String line;
 
-            while ((line = reader.readLine()) != null) {
-                writer.println(line.replace("&93;&93;&gt;", "]]>").replace("&amp;", "&"));
-            }
+			while ((line = reader.readLine()) != null) {
+				writer.println(line.replace("&93;&93;&gt;", "]]>").replace("&amp;", "&"));
+			}
 
-            reader.close();
-            writer.close();
-            tempFile.delete();
+			reader.close();
+			writer.close();
+			tempFile.delete();
 
-            if (!temp2.renameTo(tempFile)) {
-                Files.move(temp2, tempFile);
-            }
-        }
+			if (!temp2.renameTo(tempFile)) {
+				Files.move(temp2, tempFile);
+			}
+		}
 
         public ChangeLogSet<? extends Entry> getChangeLogSets() {
 			return changeLogs;
