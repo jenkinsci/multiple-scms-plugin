@@ -6,11 +6,15 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.scm.SCM;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,10 +27,13 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.google.common.io.Files;
+
 public class MultiSCMChangeLogParser extends ChangeLogParser {
 
 	public static final String ROOT_XML_TAG = "multi-scm-log";
 	public static final String SUB_LOG_TAG = "sub-log";
+	public static final int LOG_VERSION = 2;
 	
 	private final Map<String, ChangeLogParser> scmLogParsers;	
 	private final Map<String, String> scmDisplayNames;	
@@ -51,6 +58,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		private OutputStreamWriter outputStream;
 		private boolean newStream;
 		private String scmClass;
+		private int scmParseVersion = 1;
 		
 		public LogSplitter(AbstractBuild build, String tempFilePath) {
 			changeLogs = new MultiSCMChangeLogSet(build);
@@ -70,7 +78,8 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 				            length -= 1;
 				        }
 				    }
-					outputStream.write(data, startIndex, length);
+
+				    outputStream.write(data, startIndex, length);
 					newStream = false;
 				}
 			} catch (IOException e) {
@@ -91,6 +100,12 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 					throw new SAXException("could not create temp changelog file", e);
 				}
 				outputStream = new OutputStreamWriter(fos);
+			} else if (qName.compareTo(ROOT_XML_TAG) == 0) {
+				String parseVersion = attrs.getValue("version");
+
+				if (parseVersion != null) {
+					scmParseVersion = Integer.parseInt(parseVersion);
+				}
 			}
 		}
 
@@ -102,6 +117,11 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 				try {
 					outputStream.close();
 					outputStream = null;
+
+					if (scmParseVersion >= LOG_VERSION) {
+						decodeNestedCdata(tempFile);
+					}
+
 					ChangeLogParser parser = scmLogParsers.get(scmClass);
 					if(parser != null) {
 						ChangeLogSet<? extends ChangeLogSet.Entry> cls = parser.parse(build, tempFile);
@@ -115,7 +135,33 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 			}
 		}
 
-		public ChangeLogSet<? extends Entry> getChangeLogSets() {
+		/**
+		 * Attempts to decode the "]" and "&" characters from the temp file.
+		 *
+		 * @param tempFile
+		 * @throws IOException
+		 * @see {@link MultiSCM#checkout(AbstractBuild, hudson.Launcher, hudson.FilePath, hudson.model.BuildListener, File)}
+		 */
+		private void decodeNestedCdata(File tempFile) throws IOException {
+			File temp2 = File.createTempFile("tempDecode", ".tmp");
+			BufferedReader reader = new BufferedReader(new FileReader(tempFile));
+			PrintWriter writer = new PrintWriter(new FileWriter(temp2));
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				writer.println(line.replace("&93;&93;&gt;", "]]>").replace("&amp;", "&"));
+			}
+
+			reader.close();
+			writer.close();
+			tempFile.delete();
+
+			if (!temp2.renameTo(tempFile)) {
+				Files.move(temp2, tempFile);
+			}
+		}
+
+        public ChangeLogSet<? extends Entry> getChangeLogSets() {
 			return changeLogs;
 		}		
 	}
