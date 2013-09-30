@@ -9,6 +9,7 @@ import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.PollingResult;
 import hudson.scm.PollingResult.Change;
@@ -24,8 +25,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import net.sf.json.JSONArray;
 
 import net.sf.json.JSONObject;
 
@@ -199,9 +202,32 @@ public class MultiSCM extends SCM implements Saveable {
 		@Override
 		public SCM newInstance(StaplerRequest req, JSONObject formData)
 				throws FormException {
-			return super.newInstance(req, formData);
+                    // Read descriptions and invoke newInstance() for each of them
+                    List<SCM> scmList = new LinkedList<SCM>();
+                    if (formData.containsKey("scmList")) {
+                        JSONObject scm = formData.optJSONObject("scmList");
+                        if (scm == null) {         
+                            for (Object obj : formData.getJSONArray("scmList")) {
+                               readItem(req, (JSONObject)obj, scmList);
+                            }
+                        } else {
+                            readItem(req, scm, scmList);
+                        }
+                    }
+                    
+                    // return list and wrap exception
+                    try {
+                        return new MultiSCM(scmList);
+                    } catch (IOException ex) {
+                        throw new FormException(ex, "scmList");
+                    }
 		}
-	    
+                
+	    private static void readItem(StaplerRequest req, JSONObject obj, List<SCM> dest) throws FormException {
+                String staplerClass = obj.getString("stapler-class");
+                Descriptor<SCM> d = (Descriptor<SCM>) Hudson.getInstance().getDescriptor(staplerClass);
+                dest.add(d.newInstance(req, obj));
+            }
 	}
 }
 
