@@ -30,6 +30,7 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -125,10 +126,11 @@ public class MultiSCM extends SCM implements Saveable {
 			}
 			if (subChangeLog.exists()) {
 				String subLogText = FileUtils.readFileToString(subChangeLog);
+				//Dont forget to escape the XML in case there is any CDATA sections
 				logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
 						MultiSCMChangeLogParser.SUB_LOG_TAG,
 						scm.getType(),
-						subLogText,
+						StringEscapeUtils.escapeXml(subLogText),
 						MultiSCMChangeLogParser.SUB_LOG_TAG));
 
 				subChangeLog.delete();
