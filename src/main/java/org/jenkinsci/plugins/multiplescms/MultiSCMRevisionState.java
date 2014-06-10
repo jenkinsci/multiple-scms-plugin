@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 
@@ -17,12 +18,16 @@ public class MultiSCMRevisionState extends SCMRevisionState {
 		revisionStates = new HashMap<String, SCMRevisionState>(); 
 	}
 
-	public void add(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build, SCMRevisionState scmState) {
-		revisionStates.put(keyFor(scm, ws, build), scmState);
+	public void add(@NonNull SCM scm, @NonNull FilePath ws, @Nullable Run<?,?> build, SCMRevisionState scmState) {
+		revisionStates.put(scm.getKey(), scmState);
 	}
 	
 	public SCMRevisionState get(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) {
-		SCMRevisionState state = revisionStates.get(keyFor(scm, ws, build));
+		SCMRevisionState state = revisionStates.get(scm.getKey());
+        if (state == null) {
+            // backward compatibility with 0.2
+            state = revisionStates.get(keyFor(scm, ws, build));
+        }
 		// for backward compatibility with version 0.1, try to get the state using the class name as well
 		if (state == null)
 		    state = revisionStates.get(scm.getClass().getName());

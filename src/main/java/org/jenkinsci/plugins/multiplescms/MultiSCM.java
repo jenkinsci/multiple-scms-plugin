@@ -9,6 +9,7 @@ import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
+import hudson.model.Run;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.PollingResult;
 import hudson.scm.PollingResult.Change;
@@ -97,10 +98,11 @@ public class MultiSCM extends SCM implements Saveable {
 	}
 	
 	@Override
-	public boolean checkout(AbstractBuild<?, ?> build, Launcher launcher,
-			FilePath workspace, BuildListener listener, File changelogFile)
+	public void checkout(Run<?, ?> build, Launcher launcher,
+			FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline)
 			throws IOException, InterruptedException {
 
+        MultiSCMRevisionState oldBaseline = (MultiSCMRevisionState) baseline;
 		MultiSCMRevisionState revisionState = new MultiSCMRevisionState();		
 		build.addAction(revisionState);
 		
@@ -110,11 +112,10 @@ public class MultiSCM extends SCM implements Saveable {
 		OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
 		logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		
-		boolean checkoutOK = true;
 		for(SCM scm : scms) {			
 			String changeLogPath = changelogFile.getPath() + ".temp";
 			File subChangeLog = new File(changeLogPath);
-			checkoutOK = scm.checkout(build, launcher, workspace, listener, subChangeLog) && checkoutOK;
+			scm.checkout(build, launcher, workspace, listener, subChangeLog, oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null));
 			
 			List<Action> actions = build.getActions();
 			for(Action a : actions) {
@@ -135,8 +136,6 @@ public class MultiSCM extends SCM implements Saveable {
 		}
 		logWriter.write(String.format("</%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		logWriter.close();
-
-		return checkoutOK;
 	}
 
 	@Override
