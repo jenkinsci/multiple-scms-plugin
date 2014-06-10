@@ -23,14 +23,13 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
         kinds = new HashSet<String>();
 	}
 
-	public static class ChangeLogSetWrapper {
-		private AbstractBuild build;
+	public static class ChangeLogSetWrapper extends ChangeLogSet<Entry> {
 		private List<Entry> logs;
-		private Class clazz;
+		private Class clazz; 
 		private String friendlyName;
 		
 		public ChangeLogSetWrapper(AbstractBuild build, String friendlyName, Class handler) {
-			this.build = build;
+			super(build);
 			this.logs = new ArrayList<Entry>();
 			this.clazz = handler;
 			this.friendlyName = friendlyName;
@@ -55,6 +54,15 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 		public void addChanges(ChangeLogSet<? extends Entry> cls) {
 			for(Entry e : cls)
 				logs.add(e);
+		}
+
+		public Iterator<Entry> iterator() {
+			return logs.iterator();
+		}
+
+		@Override
+		public boolean isEmptySet() {
+			return logs.isEmpty();
 		}
 	}
 		

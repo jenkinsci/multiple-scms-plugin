@@ -19,6 +19,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -48,9 +49,8 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		private final MultiSCMChangeLogSet changeLogs;
 		private final AbstractBuild build;
 		private final File tempFile;
-		private OutputStreamWriter outputStream;
-		private boolean newStream;
 		private String scmClass;
+		private StringBuffer buffer;
 		
 		public LogSplitter(AbstractBuild build, String tempFilePath) {
 			changeLogs = new MultiSCMChangeLogSet(build);
@@ -61,36 +61,24 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		@Override
 		public void characters(char[] data, int startIndex, int length)
 				throws SAXException {
-			
-			try {
-				if(outputStream != null) {
-				    if (newStream) {
-				        while(length > 0 && Character.isWhitespace(data[startIndex])) {
-				            startIndex += 1;
-				            length -= 1;
-				        }
-				    }
-					outputStream.write(data, startIndex, length);
-					newStream = false;
+				if(buffer != null) {
+			        while(length > 0 && Character.isWhitespace(data[startIndex])) {
+			            startIndex += 1;
+			            length -= 1;
+			        }
+				    for (int i = 0; i < length; i++) {
+						buffer.append(data[startIndex + i]);
+					}
 				}
-			} catch (IOException e) {
-				throw new SAXException("Could not write temp changelog file", e);
-			}
+		
 		}		
 
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attrs) throws SAXException {
 			if(qName.compareTo(SUB_LOG_TAG) == 0) {
-				FileOutputStream fos;
-				try {
-					scmClass = attrs.getValue("scm");
-					newStream = true;
-					fos = new FileOutputStream(tempFile);
-				} catch (FileNotFoundException e) {
-					throw new SAXException("could not create temp changelog file", e);
-				}
-				outputStream = new OutputStreamWriter(fos);
+				scmClass = attrs.getValue("scm");
+				buffer = new StringBuffer();
 			}
 		}
 
@@ -100,17 +88,24 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 
 			if(qName.compareTo(SUB_LOG_TAG) == 0) {
 				try {
+					OutputStreamWriter outputStream = new OutputStreamWriter(new FileOutputStream(tempFile));
+					//un-escaping the XMl so it is written to the temp file correctly
+					String data = StringEscapeUtils.unescapeXml(buffer.toString());
+					outputStream.write(data);
 					outputStream.close();
-					outputStream = null;
+					buffer = null;
 					ChangeLogParser parser = scmLogParsers.get(scmClass);
 					if(parser != null) {
 						ChangeLogSet<? extends ChangeLogSet.Entry> cls = parser.parse(build, tempFile);
 						changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
 						
 					}
+				} catch (FileNotFoundException e) {
+					throw new SAXException("could not create temp changelog file", e);
 				} catch (IOException e) {
 					throw new SAXException("could not close temp changelog file", e);
 				}
+				
 				
 			}
 		}

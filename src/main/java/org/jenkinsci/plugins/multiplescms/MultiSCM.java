@@ -31,6 +31,7 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
@@ -124,15 +125,17 @@ public class MultiSCM extends SCM implements Saveable {
 					revisionState.add(scm, workspace, build, (SCMRevisionState) a);
 				}
 			}
-			
-			String subLogText = FileUtils.readFileToString(subChangeLog);
-			logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
-					MultiSCMChangeLogParser.SUB_LOG_TAG,
-					scm.getType(),
-					subLogText,
-					MultiSCMChangeLogParser.SUB_LOG_TAG));
+			if (subChangeLog.exists()) {
+				String subLogText = FileUtils.readFileToString(subChangeLog);
+				//Dont forget to escape the XML in case there is any CDATA sections
+				logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
+						MultiSCMChangeLogParser.SUB_LOG_TAG,
+						scm.getType(),
+						StringEscapeUtils.escapeXml(subLogText),
+						MultiSCMChangeLogParser.SUB_LOG_TAG));
 
-			subChangeLog.delete();
+				subChangeLog.delete();
+			}
 		}
 		logWriter.write(String.format("</%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		logWriter.close();
