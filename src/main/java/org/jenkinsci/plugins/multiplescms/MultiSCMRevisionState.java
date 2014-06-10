@@ -42,4 +42,8 @@ public class MultiSCMRevisionState extends SCMRevisionState {
         return b.toString();
     }
 
+    @Override public String toString() {
+        return "MultiSCMRevisionState" + revisionStates;
+    }
+
 }
