@@ -114,9 +114,8 @@ public class MultiSCM extends SCM implements Saveable {
 		logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
 		
 		for(SCM scm : scms) {			
-			String changeLogPath = changelogFile.getPath() + ".temp";
-			File subChangeLog = new File(changeLogPath);
-			scm.checkout(build, launcher, workspace, listener, subChangeLog, oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null));
+			File subChangeLog = changelogFile != null ? new File(changelogFile.getPath() + ".temp") : null;
+			scm.checkout(build, launcher, workspace, listener, subChangeLog, oldBaseline != null ? oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null) : null);
 			
 			List<Action> actions = build.getActions();
 			for(Action a : actions) {
@@ -125,7 +124,7 @@ public class MultiSCM extends SCM implements Saveable {
 					revisionState.add(scm, workspace, build, (SCMRevisionState) a);
 				}
 			}
-			if (subChangeLog.exists()) {
+			if (subChangeLog != null && subChangeLog.exists()) {
 				String subLogText = FileUtils.readFileToString(subChangeLog);
 				//Dont forget to escape the XML in case there is any CDATA sections
 				logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
