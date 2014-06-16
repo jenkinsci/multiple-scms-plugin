@@ -8,7 +8,7 @@
 
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>multiple-scms</artifactId>
-  <version>0.4-beta-1</version>
+  <version>0.4-beta-2-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Jenkins Multiple SCMs plugin</name>
   <description>Allows multiple SCM plugins to be used in a job.</description>
@@ -44,7 +44,7 @@
   <scm>
       <connection>scm:git:git://github.com/jenkinsci/multiple-scms-plugin.git</connection>
       <developerConnection>scm:git:git@github.com:jenkinsci/multiple-scms-plugin.git</developerConnection>
-    <tag>multiple-scms-0.4-beta-1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
