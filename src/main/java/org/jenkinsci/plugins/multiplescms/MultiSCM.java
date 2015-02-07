@@ -115,11 +115,15 @@ public class MultiSCM extends SCM implements Saveable {
 		
 		for(SCM scm : scms) {			
 			File subChangeLog = changelogFile != null ? new File(changelogFile.getPath() + ".temp") : null;
-			scm.checkout(build, launcher, workspace, listener, subChangeLog, oldBaseline != null ? oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null) : null);
+			SCMRevisionState workspaceRevision = null;
+			if (oldBaseline != null) {
+                            workspaceRevision = oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null);
+			}
+			scm.checkout(build, launcher, workspace, listener, subChangeLog, workspaceRevision);
 			
 			List<Action> actions = build.getActions();
 			for(Action a : actions) {
-				if(!scmActions.contains(a) && a instanceof SCMRevisionState) {
+				if(!scmActions.contains(a) && a instanceof SCMRevisionState && !(a instanceof MultiSCMRevisionState)) {
 					scmActions.add(a);
 					revisionState.add(scm, workspace, build, (SCMRevisionState) a);
 				}
