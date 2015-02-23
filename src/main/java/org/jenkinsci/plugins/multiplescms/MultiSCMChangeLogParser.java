@@ -36,7 +36,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 		scmLogParsers = new HashMap<String, ChangeLogParser>();
 		scmDisplayNames = new HashMap<String, String>();
 		for(SCM scm : scms) {
-            String key = scm.getType();
+            String key = scm.getKey();
 			if(!scmLogParsers.containsKey(key)) {
 				scmLogParsers.put(key, scm.createChangeLogParser());
 				scmDisplayNames.put(key, scm.getDescriptor().getDisplayName());
