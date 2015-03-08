@@ -42,8 +42,9 @@
   </licenses>
 
   <scm>
-      <connection>scm:git:git://github.com/jenkinsci/multiple-scms-plugin.git</connection>
-      <developerConnection>scm:git:git@github.com:jenkinsci/multiple-scms-plugin.git</developerConnection>
+      <connection>scm:git:https://github.com/jenkinsci/multiple-scms-plugin.git</connection>
+      <developerConnection>scm:git:https://github.com/jenkinsci/multiple-scms-plugin.git</developerConnection>
+      <url>https://github.com/jenkinsci/multiple-scms-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
