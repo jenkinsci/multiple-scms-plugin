@@ -133,7 +133,7 @@ public class MultiSCM extends SCM implements Saveable {
 				//Dont forget to escape the XML in case there is any CDATA sections
 				logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
 						MultiSCMChangeLogParser.SUB_LOG_TAG,
-						scm.getType(),
+						scm.getKey(),
 						StringEscapeUtils.escapeXml(subLogText),
 						MultiSCMChangeLogParser.SUB_LOG_TAG));
 
