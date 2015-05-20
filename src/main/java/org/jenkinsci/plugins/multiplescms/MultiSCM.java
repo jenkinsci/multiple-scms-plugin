@@ -110,12 +110,7 @@ public class MultiSCM extends SCM implements Saveable {
             FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline)
             throws IOException, InterruptedException {
 
-        MultiSCMRevisionState oldBaseline = null;
-        try {
-            oldBaseline = (MultiSCMRevisionState) baseline;
-                } catch (ClassCastException e) {
-            oldBaseline = new MultiSCMRevisionState();
-                }
+        MultiSCMRevisionState oldBaseline = baseline instanceof MultiSCMRevisionState ? (MultiSCMRevisionState) baseline : null;
         MultiSCMRevisionState revisionState = new MultiSCMRevisionState();
         build.addAction(revisionState);
 
