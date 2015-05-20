@@ -20,6 +20,11 @@
       <name>Kevin Bell</name>
       <email>kbell6397@gmail.com</email>
     </developer>
+    <developer>
+      <id>rodrigc</id>
+      <name>Craig Rodrigues</name>
+      <email>rodrigc@FreeBSD.org</email>
+    </developer>
   </developers>
 
   <repositories>
