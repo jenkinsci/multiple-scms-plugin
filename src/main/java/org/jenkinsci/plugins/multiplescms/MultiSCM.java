@@ -90,6 +90,10 @@ public class MultiSCM extends SCM implements Saveable {
 		
 		for(SCM scm : scms) {
 			SCMRevisionState scmBaseline = baselineStates != null ? baselineStates.get(scm, workspace, null) : null;
+			if (scmBaseline instanceof MultiSCMRevisionState
+					&& !(scm instanceof MultiSCM)) {
+				continue;
+			}
 			PollingResult scmResult = scm.poll(project, launcher, workspace, listener, scmBaseline != null ? scmBaseline : SCMRevisionState.NONE);
 			currentStates.add(scm, workspace, null, scmResult.remote);
 			if(scmResult.change.compareTo(overallChange) > 0)
