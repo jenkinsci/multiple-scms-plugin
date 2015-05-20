@@ -100,7 +100,9 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 						changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
 						
 					}
-				} catch (FileNotFoundException e) {
+				} catch (RuntimeException e) {
+                    throw new SAXException("could not parse changelog file", e);
+                } catch (FileNotFoundException e) {
 					throw new SAXException("could not create temp changelog file", e);
 				} catch (IOException e) {
 					throw new SAXException("could not close temp changelog file", e);
