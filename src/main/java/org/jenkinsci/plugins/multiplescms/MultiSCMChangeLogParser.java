@@ -38,7 +38,11 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
             String key = scm.getKey();
             if(!scmLogParsers.containsKey(key)) {
                 scmLogParsers.put(key, scm.createChangeLogParser());
-                scmDisplayNames.put(key, scm.getDescriptor().getDisplayName());
+                String displayName = scm.getDescriptor().getDisplayName();
+                if (key != displayName) {
+                    displayName = String.format("%s (%s)", displayName, key);
+                }
+                scmDisplayNames.put(key, displayName);
             }
         }
     }
