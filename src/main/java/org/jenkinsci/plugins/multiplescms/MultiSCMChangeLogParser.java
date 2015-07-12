@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 
 import java.io.File;
@@ -30,10 +31,13 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
 
     private final Map<String, ChangeLogParser> scmLogParsers;
     private final Map<String, String> scmDisplayNames;
+    private final Map<String, RepositoryBrowser<?>> scmRepositoryBrowsers;
 
     public MultiSCMChangeLogParser(List<SCM> scms) {
         scmLogParsers = new HashMap<String, ChangeLogParser>();
         scmDisplayNames = new HashMap<String, String>();
+        scmRepositoryBrowsers = new HashMap<String, RepositoryBrowser<?>>();
+
         for(SCM scm : scms) {
             String key = scm.getKey();
             if(!scmLogParsers.containsKey(key)) {
@@ -43,6 +47,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
                     displayName = String.format("%s (%s)", displayName, key);
                 }
                 scmDisplayNames.put(key, displayName);
+                scmRepositoryBrowsers.put(key, scm.getBrowser());
             }
         }
     }
@@ -98,8 +103,21 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
                     outputStream.close();
                     buffer = null;
                     ChangeLogParser parser = scmLogParsers.get(scmClass);
+
+                    /*
+                     * Due to XSTREAM serialization scmRepositoryBrowsers may be null.
+                     */
+                    RepositoryBrowser<?> browser = null;
+                    if (scmRepositoryBrowsers != null) {
+                        browser = scmRepositoryBrowsers.get(scmClass);
+                    }
                     if(parser != null) {
-                        ChangeLogSet<? extends ChangeLogSet.Entry> cls = parser.parse(build, tempFile);
+                        ChangeLogSet<? extends ChangeLogSet.Entry> cls;
+                        if (browser != null) {
+                            cls = parser.parse(build, browser, tempFile);
+                        } else {
+                            cls = parser.parse(build, tempFile);
+                        }
                         changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
 
                     }
