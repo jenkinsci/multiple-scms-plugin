@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.multiplescms;
 
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import net.sf.json.JSONArray;
 
 import net.sf.json.JSONObject;
@@ -71,12 +73,24 @@ public class MultiSCM extends SCM implements Saveable {
 
     @Override
     public void buildEnvVars(AbstractBuild<?,?> build, Map<String, String> env) {
-        for(SCM scm : scms) {
+        // Add each SCM's env vars, appending indices where needed to avoid collisions
+        for (int i = 0; i < scms.size(); i++) {
             try {
-                scm.buildEnvVars(build, env);
+                EnvVars currScmVars = new EnvVars();
+                scms.get(i).buildEnvVars(build, currScmVars);
+                for (Entry<String, String> entry : currScmVars.entrySet()) {
+                    if (env.containsKey(entry.getKey())) {
+                        // We have a collision; append the index of this SCM to the env var name
+                        env.put(entry.getKey() + "_" + i, entry.getValue());
+                    } else {
+                        // No collision; just put the var as usual
+                        env.put(entry.getKey(), entry.getValue());
+                    }
+                }
             }
             catch(NullPointerException npe)
             {}
+            
         }
     }
 
