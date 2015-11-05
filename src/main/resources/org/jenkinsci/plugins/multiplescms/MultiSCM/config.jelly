@@ -1,7 +1,12 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="org/jenkinsci/plugins/multiplescms/forms">
+	<!-- promote multiscm value to new template names -->
+	<j:set var="multiscmd" value="${scmd}" />
+	<j:set var="multiscm" value="${scm}" />
+	<j:set var="multiscm_instance" value="${instance}" />
+
 	<f:block>
-	  <f:hetero-list name="scmList" hasHeader="true"
+	  <p:hetero-list-scm name="scmList" hasHeader="true"
 	                 descriptors="${descriptor.getApplicableSCMs(it)}"
 	                 items="${instance.configuredSCMs}"
 	                 addCaption="Add SCM"

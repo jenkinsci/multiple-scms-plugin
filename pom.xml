@@ -84,6 +84,13 @@
         <artifactId>maven-hpi-plugin</artifactId>
         <version>${maven-hpi-plugin.version}</version>
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-taglib-interface</goal>
+            </goals>
+          </execution>
+        </executions>
      </plugin>
      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
