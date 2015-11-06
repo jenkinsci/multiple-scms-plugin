@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import hudson.model.AbstractBuild;
+import hudson.scm.RepositoryBrowser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import java.util.HashSet;
@@ -29,6 +30,13 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
 
         public ChangeLogSetWrapper(AbstractBuild build, String friendlyName, Class handler) {
             super(build);
+            this.logs = new ArrayList<Entry>();
+            this.clazz = handler;
+            this.friendlyName = friendlyName;
+        }
+
+        public ChangeLogSetWrapper(AbstractBuild build, RepositoryBrowser<?> browser, String friendlyName, Class handler) {
+            super(build, browser);
             this.logs = new ArrayList<Entry>();
             this.clazz = handler;
             this.friendlyName = friendlyName;
@@ -109,7 +117,7 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
         if(!cls.isEmptySet()) {
             ChangeLogSetWrapper wrapper = changes.get(scmClass);
             if(wrapper == null) {
-                wrapper = new ChangeLogSetWrapper(build, scmFriendlyName, cls.getClass());
+                wrapper = new ChangeLogSetWrapper(build, cls.getBrowser(), scmFriendlyName, cls.getClass());
                 changes.put(scmClass, wrapper);
             }
             wrapper.addChanges(cls);

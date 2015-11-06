@@ -9,6 +9,7 @@
     <j:otherwise>
       Changes
       <j:forEach var="wrapper" items="${it.ChangeLogSetWrappers}">
+        <j:set var="browser" value="${wrapper.browser == null ? it.build.parent.scm.effectiveBrowser : wrapper.browser}"/>
       	<p>
   		<st:out value="${wrapper.name}"/>
   		</p>
