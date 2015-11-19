@@ -19,6 +19,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import hudson.scm.SCMDescriptor;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -38,7 +39,17 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
             String key = scm.getKey();
             if(!scmLogParsers.containsKey(key)) {
                 scmLogParsers.put(key, scm.createChangeLogParser());
-                scmDisplayNames.put(key, scm.getDescriptor().getDisplayName());
+                String displayedKey;
+                { //manipulate the key to be more presentable, GIT centric
+                    int postLastSlash = key.lastIndexOf('/')+1;
+                    int lastDot = key.substring(postLastSlash).lastIndexOf('.');
+                    lastDot=((lastDot==-1)?-1:lastDot+postLastSlash);
+                    int endIndex = lastDot != -1 ? lastDot : key.length();
+                    displayedKey = key.substring(postLastSlash , endIndex);
+                }
+                SCMDescriptor<?> descriptor = scm.getDescriptor();
+                String descriptiveName = descriptor.getDisplayName() + " ID: " + displayedKey;
+                scmDisplayNames.put(key,descriptiveName);
             }
         }
     }
