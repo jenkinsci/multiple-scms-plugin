@@ -22,9 +22,10 @@ public class MultiSCMRevisionState extends SCMRevisionState {
         revisionStates.put(scm.getKey(), scmState);
     }
 
-    public SCMRevisionState get(@NonNull SCM scm, @NonNull FilePath ws, @Nullable AbstractBuild<?,?> build) {
+    public SCMRevisionState get(@NonNull SCM scm, FilePath ws, @Nullable AbstractBuild<?,?> build) {
         SCMRevisionState state = revisionStates.get(scm.getKey());
-        if (state == null) {
+        // At the moment we have a SCM that doesn't require a workspace ws will be null
+        if (state == null && ws != null) {
             // backward compatibility with 0.2
             state = revisionStates.get(keyFor(scm, ws, build));
         }
