@@ -162,6 +162,28 @@ public class MultiSCM extends SCM implements Saveable {
         return paths.toArray(new FilePath[paths.size()]);
     }
 
+    // Only return supportsPolling when all scms do report back that
+    // they supports polling
+    @Override
+    public boolean supportsPolling()
+    {
+      for(SCM scm : scms) {
+        if (!scm.supportsPolling()) return false;
+      }
+      return true;
+    }
+
+    // When one scm does require a workspace we return true, else
+    // we don't need a workspace for polling
+    @Override
+    public boolean requiresWorkspaceForPolling()
+    {
+      for(SCM scm : scms) {
+        if (scm.requiresWorkspaceForPolling()) return true;
+      }
+      return false;
+    }
+
     @Override
     public ChangeLogParser createChangeLogParser() {
         return new MultiSCMChangeLogParser(scms.toList());
