@@ -43,6 +43,8 @@
   <properties>
     <maven-release-plugin.version>2.5.1</maven-release-plugin.version>
     <maven-hpi-plugin.version>1.112</maven-hpi-plugin.version>
+    <maven-deploy-plugin.version>2.6</maven-deploy-plugin.version>
+    <wagon-http.version>2.10</wagon-http.version>
     <netbeans.hint.jdkPlatform>JDK_1.6</netbeans.hint.jdkPlatform> <!-- HUDSON-8942 / JENKINS-10490 -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -99,6 +101,20 @@
         <configuration>
           <goals>deploy</goals>
         </configuration>
+      </plugin>
+
+      <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>${maven-deploy-plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-http</artifactId>
+            <version>${wagon-http.version}</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
