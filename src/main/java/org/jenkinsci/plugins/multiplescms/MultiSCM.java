@@ -79,16 +79,13 @@ public class MultiSCM extends SCM implements Saveable {
                 EnvVars currScmVars = new EnvVars();
                 scms.get(i).buildEnvVars(build, currScmVars);
                 for (Entry<String, String> entry : currScmVars.entrySet()) {
-                    if (env.containsKey(entry.getKey())) {
-                        // We have a collision; append the index of this SCM to the env var name
-                        env.put(entry.getKey() + "_" + i, entry.getValue());
-                    } else {
-                        // No collision; just put the var as usual
-                        env.put(entry.getKey(), entry.getValue());
-                    }
+                    // Always append the SCM instance to the ENV var
+                    env.put(entry.getKey() + "_" + (i + 1), entry.getValue());
+                    // This retains backwards compatibility for existing jobs of the last SCM reporting its VARS
+                    env.put(entry.getKey(), entry.getValue());
                 }
             }
-            catch(NullPointerException npe)
+                catch(NullPointerException npe)
             {}
             
         }
