@@ -1,0 +1,36 @@
+plugins {
+  id 'org.jenkins-ci.jpi' version '0.17.0'
+  id 'com.github.hierynomus.license' version '0.12.1'
+}
+
+version = '0.7-SNAPSHOT'
+description = 'Allows multiple SCM plugins to be used in a job.'
+
+license {
+    header = file('LICENSE')
+}
+
+group = 'org.jenkins-ci.plugins'
+
+jenkinsPlugin {
+    // version of Jenkins core this plugin depends on, must be 1.420 or later
+    coreVersion = '1.580.1'
+    shortName = 'multiple-scms'
+    displayName = 'Jenkins Multiple SCMs plugin'
+    url = 'https://wiki.jenkins-ci.org/display/JENKINS/Multiple+SCMs+Plugin'
+    gitHubUrl = 'https://github.com/jenkinsci/multiple-scms-plugin'
+
+    // the developers section is optional, and corresponds to the POM developers section
+    developers {
+        developer {
+            id 'kbell'
+            name 'Kevin Bell'
+            email 'kbell6397@gmail.com'
+        }
+        developer {
+            id 'rodrigc'
+            name 'Craig Rodrigues'
+            email 'rodrigc@FreeBSD.org'
+        }
+    }
+}
