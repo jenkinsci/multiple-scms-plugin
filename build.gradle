@@ -1,14 +1,14 @@
 plugins {
   id 'org.jenkins-ci.jpi' version '0.17.0'
-  id 'com.github.hierynomus.license' version '0.12.1'
+//  id 'com.github.hierynomus.license' version '0.12.1'
 }
 
 version = '0.7-SNAPSHOT'
 description = 'Allows multiple SCM plugins to be used in a job.'
 
-license {
-    header = file('LICENSE')
-}
+//license {
+//    header = file('LICENSE')
+//}
 
 group = 'org.jenkins-ci.plugins'
 
