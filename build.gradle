@@ -20,6 +20,9 @@ jenkinsPlugin {
     url = 'https://wiki.jenkins-ci.org/display/JENKINS/Multiple+SCMs+Plugin'
     gitHubUrl = 'https://github.com/jenkinsci/multiple-scms-plugin'
 
+    dependencies {
+	jenkinsPlugins 'org.jenkins-ci.plugins:scm-api:1.2@jar'
+    }
     // the developers section is optional, and corresponds to the POM developers section
     developers {
         developer {
