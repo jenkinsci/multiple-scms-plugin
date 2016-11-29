@@ -2,34 +2,10 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
   xmlns:f="/lib/form"
   xmlns:p="org/jenkinsci/plugins/multiplescms/forms">
-  <!-- promote multiscm value to new template names
-    targetType="org.jenkinsci.plugins.multiplescms.MultiSCMSource.class"
-  <j:set var="multiscmd" value="${scmd}" />
-  <j:set var="multiscm" value="${scm}" />
-  <j:set var="multiscm_instance" value="${instance}" />
-
-  <f:block>
-    <p:hetero-list-scm name="scmSources" hasHeader="true"
-      descriptors="${descriptor.getApplicableSCMs()}" items="${instance.scmSources}"
-      addCaption="Add SCM" deleteCaption="Delete SCM" />
-  </f:block>
-  -->
-  <!--
-    <j:set var="multiscmd" value="${scmd}" />
-    <j:set var="multiscm" value="${scm}" />
-    <j:set var="multiscm_instance" value="${instance}" />
-    <j:set var="scm" value="${instance}" />
-    <f:block>
-    <f:repeatableHeteroProperty field="scmSources" hasHeader="true"
-    addCaption="Add SCM2"
-    deleteCaption = "Delete SCM2"/>
-    </f:block>
-  -->
-
   <f:block>
     <f:hetero-list name="scmSources" items="${instance.scmSources}"
       descriptors="${descriptor.getScmSourceDescriptors()}" hasHeader="true" 
-      addCaption="${'%Add SCM'}" deleteCaption="${'%Delete SCM'}"
+      addCaption="${'%Add SCM to Multiple SCMs'}" deleteCaption="${'%Delete SCM'}"
       />
   </f:block>
 </j:jelly>
