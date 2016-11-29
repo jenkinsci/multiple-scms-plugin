@@ -23,7 +23,7 @@
  */
 package org.jenkinsci.plugins.multiplescms;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -46,7 +46,7 @@ class MultiSCMHeadObserver extends SCMHeadObserver {
      * 
      */
     public MultiSCMHeadObserver(int numSources) {
-	result = new HashMap<SCMSource, SCMHeadObserver.Collector>(numSources, 1.0f);
+	result = new LinkedHashMap<SCMSource, SCMHeadObserver.Collector>(numSources, 1.0f);
     }
 
     /**

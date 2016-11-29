@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -150,15 +151,17 @@ public class MultiSCMSource extends SCMSource {
 		}
 	    }
 	    // feed remaining branches into observer...
-	    for (SCMHead scmHead : branches) {
+	    for (SCMHead branch : branches) {
+		final List<SCMRevision> bRevs = new ArrayList<SCMRevision>(multiObserverResult.size());
 		for (Collector res : multiObserverResult.values()) {
-		    final SCMRevision scmRevision = res.result().get(scmHead);
+		    final SCMRevision scmRevision = res.result().get(branch);
 		    if (scmRevision != null) {
-			// listener.getLogger().format(" Branch '%s' in SCM
-			// %s%n", scmHead.getName(), res.getKey());
-			observer.observe(scmRevision.getHead(), scmRevision);
+			bRevs.add(scmRevision);
 		    }
 		}
+		final MultiSCMRevision rev = new MultiSCMRevision(branch,
+			(SCMRevision[]) bRevs.toArray(new SCMRevision[bRevs.size()]));
+		observer.observe(branch, rev);
 	    }
 	}
 	listener.getLogger().println("Done collecting branches.");
@@ -194,6 +197,65 @@ public class MultiSCMSource extends SCMSource {
     // //////////////////////////////////////////////////////////////////
     // inner classes
     // //////////////////////////////////////////////////////////////////
+    /**
+     * An {@code SCMRevision} implementation that hold multiple SCMRevisions.
+     * 
+     * @author Martin Weber
+     */
+    private static class MultiSCMRevision extends SCMRevision {
+	private final SCMRevision[] revisions;
+
+	/**
+	 */
+	protected MultiSCMRevision(SCMHead head, SCMRevision[] revisions) {
+	    super(head);
+	    if (revisions == null) {
+		throw new NullPointerException("revisions");
+	    }
+	    this.revisions = revisions;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+	    if (this == o) {
+		return true;
+	    }
+	    if (o == null || getClass() != o.getClass()) {
+		return false;
+	    }
+
+	    MultiSCMRevision that = (MultiSCMRevision) o;
+
+	    if (!getHead().equals(that.getHead())) {
+		return false;
+	    }
+	    if (!Arrays.equals(revisions, that.revisions))
+		return false;
+	    return true;
+	}
+
+	@Override
+	public int hashCode() {
+	    final int prime = 31;
+	    int result = 1;
+	    result = prime * result + Arrays.hashCode(revisions);
+	    return result;
+	}
+
+	@Override
+	public String toString() {
+	    StringBuilder b = new StringBuilder();
+	    int iMax = revisions.length - 1;
+	    for (int i = 0; i < revisions.length; i++) {
+		b.append(revisions[i]);
+		if (i == iMax)
+		    break;
+		b.append(":");
+	    }
+	    return b.toString();
+	}
+    } // MultiSCMRevision
+
     @Extension
     public static class DescriptorImpl extends SCMSourceDescriptor {
 	private static Logger logger = Logger.getLogger(MultiSCMSource.class.getName());
