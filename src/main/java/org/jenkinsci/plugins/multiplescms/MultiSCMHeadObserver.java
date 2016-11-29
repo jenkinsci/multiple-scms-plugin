@@ -23,8 +23,8 @@
  */
 package org.jenkinsci.plugins.multiplescms;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.scm.api.SCMHead;
@@ -38,7 +38,7 @@ import jenkins.scm.api.SCMSource;
  */
 class MultiSCMHeadObserver extends SCMHeadObserver {
 
-    private final Map<SCMSource, Collector> result;
+    private final List<Collector> result;
     private Collector currentObserver;
     private SCMSource currentSource;
 
@@ -46,7 +46,7 @@ class MultiSCMHeadObserver extends SCMHeadObserver {
      * 
      */
     public MultiSCMHeadObserver(int numSources) {
-	result = new LinkedHashMap<SCMSource, SCMHeadObserver.Collector>(numSources, 1.0f);
+	result = new ArrayList<SCMHeadObserver.Collector>(numSources);
     }
 
     /**
@@ -56,16 +56,19 @@ class MultiSCMHeadObserver extends SCMHeadObserver {
      * @param newSource
      */
     public void beginObserving(SCMSource newSource) {
-	currentObserver = new SCMHeadObserver.Collector();
-	currentSource = newSource;
+	if (newSource != currentSource) {
+	    currentObserver = new SCMHeadObserver.Collector();
+	    currentSource = newSource;
+	}
     }
 
     /**
      * Notified after a SCM source has been successfully observed. Must be
-     * invoked after to {@link #observe}.
+     * invoked after to {@link #observe}. May be not invoked, if an error
+     * occurred in the calling code.
      */
     public void endObserving() {
-	result.put(currentSource, currentObserver);
+	result.add(currentObserver);
 	currentObserver = null;
 	currentSource = null;
     }
@@ -82,12 +85,15 @@ class MultiSCMHeadObserver extends SCMHeadObserver {
     }
 
     /**
-     * Returns the collected results.
+     * Returns the collected results. For each invocation sequence of
+     * {@link #beginObserving(SCMSource)}/{@link #endObserving()}, the returned
+     * list will contain a corresponding {@code Collector} object.
+     * 
      *
      * @return the collected results.
      */
     @NonNull
-    public Map<SCMSource, Collector> result() {
+    public List<Collector> result() {
 	return result;
     }
 }

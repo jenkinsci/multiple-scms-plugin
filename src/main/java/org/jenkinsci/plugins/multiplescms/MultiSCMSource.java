@@ -124,10 +124,10 @@ public class MultiSCMSource extends SCMSource {
 
 	// retain only branches that exist in every source...
 	Collector smallestByBranchCount = null;
-	final Map<SCMSource, Collector> multiObserverResult = multiObserver.result();
+	final List<Collector> multiSCMCollectors = multiObserver.result();
 	{
 	    int smallestSize = Integer.MAX_VALUE;
-	    for (Collector entry : multiObserverResult.values()) {
+	    for (Collector entry : multiSCMCollectors) {
 		int size = entry.result().size();
 		if (size < smallestSize) {
 		    smallestSize = size;
@@ -143,7 +143,7 @@ public class MultiSCMSource extends SCMSource {
 	    // remove non-existing branches...
 	    for (Iterator<SCMHead> iter = branches.iterator(); iter.hasNext();) {
 		final SCMHead branch = iter.next();
-		for (Collector collector : multiObserverResult.values()) {
+		for (Collector collector : multiSCMCollectors) {
 		    if (!collector.result().containsKey(branch)) {
 			iter.remove();
 			break;
@@ -152,8 +152,8 @@ public class MultiSCMSource extends SCMSource {
 	    }
 	    // feed remaining branches into observer...
 	    for (SCMHead branch : branches) {
-		final List<SCMRevision> bRevs = new ArrayList<SCMRevision>(multiObserverResult.size());
-		for (Collector res : multiObserverResult.values()) {
+		final List<SCMRevision> bRevs = new ArrayList<SCMRevision>(multiSCMCollectors.size());
+		for (Collector res : multiSCMCollectors) {
 		    final SCMRevision scmRevision = res.result().get(branch);
 		    if (scmRevision != null) {
 			bRevs.add(scmRevision);
@@ -203,6 +203,10 @@ public class MultiSCMSource extends SCMSource {
      * @author Martin Weber
      */
     private static class MultiSCMRevision extends SCMRevision {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private final SCMRevision[] revisions;
 
 	/**
@@ -225,7 +229,6 @@ public class MultiSCMSource extends SCMSource {
 	    }
 
 	    MultiSCMRevision that = (MultiSCMRevision) o;
-
 	    if (!getHead().equals(that.getHead())) {
 		return false;
 	    }
