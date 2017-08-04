@@ -124,42 +124,117 @@ public class MultiSCM extends SCM implements Saveable {
             FilePath workspace, TaskListener listener, File changelogFile, SCMRevisionState baseline)
             throws IOException, InterruptedException {
 
-        MultiSCMRevisionState oldBaseline = baseline instanceof MultiSCMRevisionState ? (MultiSCMRevisionState) baseline : null;
-        MultiSCMRevisionState revisionState = new MultiSCMRevisionState();
+       final MultiSCMRevisionState oldBaseline = baseline instanceof MultiSCMRevisionState ? (MultiSCMRevisionState) baseline : null;
+        final MultiSCMRevisionState revisionState = new MultiSCMRevisionState();
         build.addAction(revisionState);
+		
+        final Run<?, ?> f_build = build;
+        final Launcher f_launcher = launcher;
+        final FilePath f_workspace = workspace;
+        final TaskListener f_listener = listener;
+        final File f_changelogFile = changelogFile;
+        //final SCMRevisionState f_baseline = baseline;
 
-        HashSet<Object> scmActions = new HashSet<Object>();
+        final HashSet<Object> scmActions = new HashSet<Object>();
 
         FileOutputStream logStream = new FileOutputStream(changelogFile);
-        OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
+        final OutputStreamWriter logWriter = new OutputStreamWriter(logStream);
         logWriter.write(String.format("<%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
+		
+        ArrayList<Thread> Threads = new ArrayList<Thread>();
 
-        for(SCM scm : scms) {
-            File subChangeLog = changelogFile != null ? new File(changelogFile.getPath() + ".temp") : null;
-            SCMRevisionState workspaceRevision = null;
-            if (oldBaseline != null) {
-                            workspaceRevision = oldBaseline.get(scm, workspace, build instanceof AbstractBuild ? (AbstractBuild) build : null);
+        int i = 0;
+
+        for(final SCM scm : scms) {
+            if(i++ == scms.size() - 1){
+                Threads.add(new Thread(new Runnable()  
+                {
+                    @Override  
+                    public void run()  
+                    {
+                        File subChangeLog = f_changelogFile != null ? new File(f_changelogFile.getPath() + ".temp") : null;
+                        SCMRevisionState workspaceRevision = null;
+                        if (oldBaseline != null) {
+                            workspaceRevision = oldBaseline.get(scm, f_workspace, f_build instanceof AbstractBuild ? (AbstractBuild) f_build : null);
+                        }
+                        try{
+                            scm.checkout(f_build, f_launcher, f_workspace, f_listener, subChangeLog, workspaceRevision);
+                        }
+                        catch(Exception ex){}
+
+                        List<Action> actions = f_build.getActions();
+                        for(Action a : actions) {
+                            if(!scmActions.contains(a) && a instanceof SCMRevisionState && !(a instanceof MultiSCMRevisionState)) {
+                                try{
+                                    scmActions.add(a);
+                                }catch(Exception ex){}
+                                try{
+                                    revisionState.add(scm, f_workspace, f_build, (SCMRevisionState) a);
+                                }catch(Exception ex){}
+                            }
+                        }
+                        if (subChangeLog != null && subChangeLog.exists()) {
+                            String subLogText = "";
+                            try{
+                                subLogText = FileUtils.readFileToString(subChangeLog);
+                            }
+                            catch(Exception ex){}
+                            //Dont forget to escape the XML in case there is any CDATA sections
+                            try{
+                                logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",MultiSCMChangeLogParser.SUB_LOG_TAG,scm.getKey(),StringEscapeUtils.escapeXml(subLogText),MultiSCMChangeLogParser.SUB_LOG_TAG));
+                            }catch(Exception ex){}
+                            subChangeLog.delete();
+                        }
+                    }
+                }));
+                Threads.get(i-1).start();
             }
-            scm.checkout(build, launcher, workspace, listener, subChangeLog, workspaceRevision);
+            else{
+                Threads.add(new Thread(new Runnable()
+                {
+                    @Override  
+                    public void run()  
+                    {
+                        File subChangeLog = f_changelogFile != null ? new File(f_changelogFile.getPath() + ".temp") : null;
+                        SCMRevisionState workspaceRevision = null;
+                        if (oldBaseline != null) {
+                            workspaceRevision = oldBaseline.get(scm, f_workspace, f_build instanceof AbstractBuild ? (AbstractBuild) f_build : null);
+                        }
+                        try{
+                            scm.checkout(f_build, f_launcher, f_workspace, f_listener, subChangeLog, workspaceRevision);
+                        }
+                        catch(Exception ex){}
 
-            List<Action> actions = build.getActions();
-            for(Action a : actions) {
-                if(!scmActions.contains(a) && a instanceof SCMRevisionState && !(a instanceof MultiSCMRevisionState)) {
-                    scmActions.add(a);
-                    revisionState.add(scm, workspace, build, (SCMRevisionState) a);
+                        List<Action> actions = f_build.getActions();
+                        for(Action a : actions) {
+                            if(!scmActions.contains(a) && a instanceof SCMRevisionState && !(a instanceof MultiSCMRevisionState)) {
+                                try{
+                                    scmActions.add(a);
+                                }catch(Exception ex){}
+                                try{
+                                    revisionState.add(scm, f_workspace, f_build, (SCMRevisionState) a);
+                                }catch(Exception ex){}
+                            }
+                        }
+                        if (subChangeLog != null && subChangeLog.exists()) {
+                            subChangeLog.delete();
+                        }
+                    }
+                }));
+                Threads.get(i-1).start();
+            }
+			
+        }
+        boolean thread_finish = false;
+        while(!thread_finish){
+            for(Thread th: Threads){
+                if(th.isAlive()){
+                    thread_finish = false;
+                    break;
                 }
+                thread_finish = true;
             }
-            if (subChangeLog != null && subChangeLog.exists()) {
-                String subLogText = FileUtils.readFileToString(subChangeLog);
-                //Dont forget to escape the XML in case there is any CDATA sections
-                logWriter.write(String.format("<%s scm=\"%s\">\n<![CDATA[%s]]>\n</%s>\n",
-                        MultiSCMChangeLogParser.SUB_LOG_TAG,
-                        scm.getKey(),
-                        StringEscapeUtils.escapeXml(subLogText),
-                        MultiSCMChangeLogParser.SUB_LOG_TAG));
-
-                subChangeLog.delete();
-            }
+            Thread.sleep(1000);
         }
         logWriter.write(String.format("</%s>\n", MultiSCMChangeLogParser.ROOT_XML_TAG));
         logWriter.close();
