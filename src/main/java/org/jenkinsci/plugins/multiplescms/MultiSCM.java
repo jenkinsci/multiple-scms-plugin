@@ -5,14 +5,13 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Action;
-import hudson.model.BuildListener;
 import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
+import hudson.model.Job;
 import hudson.model.Run;
-import hudson.model.Hudson;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.PollingResult;
 import hudson.scm.PollingResult.Change;
@@ -21,6 +20,7 @@ import hudson.scm.SCMRevisionState;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,8 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.sf.json.JSONArray;
-
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
@@ -44,7 +42,7 @@ import org.kohsuke.stapler.export.Exported;
 
 public class MultiSCM extends SCM implements Saveable {
     private DescribableList<SCM,Descriptor<SCM>> scms =
-        new DescribableList<SCM,Descriptor<SCM>>(this);
+        new DescribableList<>(this);
 
     @DataBoundConstructor
     public MultiSCM(List<SCM> scmList) throws IOException {
@@ -64,7 +62,8 @@ public class MultiSCM extends SCM implements Saveable {
         MultiSCMRevisionState revisionStates = new MultiSCMRevisionState();
 
         for(SCM scm : scms) {
-            SCMRevisionState scmState = scm.calcRevisionsFromBuild(build, launcher, listener);
+            SCMRevisionState scmState = scm.calcRevisionsFromBuild
+                (build, launcher != null ? build.getWorkspace() : null, launcher, listener);
             revisionStates.add(scm, build.getWorkspace(), build, scmState);
         }
 
@@ -90,7 +89,7 @@ public class MultiSCM extends SCM implements Saveable {
             }
             catch(NullPointerException npe)
             {}
-            
+
         }
     }
 
@@ -142,7 +141,7 @@ public class MultiSCM extends SCM implements Saveable {
             }
             scm.checkout(build, launcher, workspace, listener, subChangeLog, workspaceRevision);
 
-            List<Action> actions = build.getActions();
+            List<? extends Action> actions = build.getAllActions();
             for(Action a : actions) {
                 if(!scmActions.contains(a) && a instanceof SCMRevisionState && !(a instanceof MultiSCMRevisionState)) {
                     scmActions.add(a);
@@ -217,7 +216,7 @@ public class MultiSCM extends SCM implements Saveable {
         public List<SCMDescriptor<?>> getApplicableSCMs(AbstractProject<?, ?> project) {
             List<SCMDescriptor<?>> scms = new ArrayList<SCMDescriptor<?>>();
 
-            for(SCMDescriptor<?> scm : SCM._for(project)) {
+            for(SCMDescriptor<?> scm : SCM._for((Job)project)) {
                 // Filter MultiSCM itself from the list of choices.
                 // Theoretically it might work, but I see no practical reason to allow
                 // nested MultiSCM configurations.
@@ -267,7 +266,8 @@ public class MultiSCM extends SCM implements Saveable {
 
         private static void readItem(StaplerRequest req, JSONObject obj, List<SCM> dest) throws FormException {
             String staplerClass = obj.getString("stapler-class");
-            Descriptor<SCM> d = (Descriptor<SCM>) Hudson.getInstance().getDescriptor(staplerClass);
+            @SuppressWarnings("unchecked")
+            Descriptor<SCM> d = Jenkins.getInstance().getDescriptor(staplerClass);
             dest.add(d.newInstance(req, obj));
         }
     }
