@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016 Martin Weber
+ * Copyright (c) 2016-2018 Martin Weber
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.TaskListener;
+import hudson.scm.NullSCM;
 import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMHeadObserver;
@@ -232,11 +236,43 @@ public class MultiSCMSource extends SCMSource {
     } // MultiSCMRevision
 
     @Extension
+    @Symbol(value = { "multipleSCMs" })
     public static class DescriptorImpl extends SCMSourceDescriptor {
 	@Override
 	public String getDisplayName() {
 	    return "Multiple SCMs";
 	}
+
+	/**
+         * Returns the {@link SCMDescriptor} instances that are appropriate for the current context.
+         *
+         * @param context the current context.
+         * @return the {@link SCMDescriptor} instances
+         */
+        @SuppressWarnings("unused") // used by stapler binding
+        public static List<SCMDescriptor<?>> getScmSourceDescriptors(/*@AncestorInPath SCMSourceOwner context*/) {
+            List<SCMDescriptor<?>> result = new ArrayList<SCMDescriptor<?>>(SCM.all());
+            for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
+                SCMDescriptor<?> d = iterator.next();
+                if (NullSCM.class.equals(d.clazz) || MultiSCM.class.equals(d.clazz)) {
+                    iterator.remove();
+                }
+            }
+
+            //            if (context != null && context instanceof Describable) {
+//                final Descriptor descriptor = ((Describable) context).getDescriptor();
+//                if (descriptor instanceof TopLevelItemDescriptor) {
+//                    final TopLevelItemDescriptor topLevelItemDescriptor = (TopLevelItemDescriptor) descriptor;
+//                    for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
+//                        SCMDescriptor<?> d = iterator.next();
+//                        if (!topLevelItemDescriptor.isApplicable(d)) {
+//                            iterator.remove();
+//                        }
+//                    }
+//                }
+//            }
+            return result;
+        }
     } // DescriptorImpl
 
 }

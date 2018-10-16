@@ -1,0 +1,11 @@
+<div>
+Looks for branches in multiple SCMs. A per-branch sub-project will be created, if a branch
+is present in <strong>each</strong> of the configured SCMs.<br>
+The created sub-projects will check out files from each of the SCMs on a job run 
+(unlike Multibranch-pipeline, which creates sub-projects checking out from a branch seen in
+the first SCM, ignoring the other SCMs during checkout), 
+<br>
+TIP: Concerning git, it will be sufficient to only specify the relevant branches in the
+<cite>Include branches</cite> field in the first SCM in the list below and to leave the
+default wildcard <code>*</code> in the additional SCMs untouched.
+</div>
