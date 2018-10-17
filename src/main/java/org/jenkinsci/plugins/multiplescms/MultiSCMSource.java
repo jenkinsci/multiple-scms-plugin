@@ -109,7 +109,7 @@ public class MultiSCMSource extends SCMSource {
       }
 
       if (smallestByBranchCount != null) {
-          listener.getLogger().println("Collecting branches that exist in each SCM...");
+          listener.getLogger().println("Collecting branches...");
           // gather potential branches...
           // NOTE: assume SCMHead has by-branch-name equality
           final Set<SCMHead> branches = new HashSet<SCMHead>(smallestByBranchCount.result().keySet());
@@ -123,8 +123,12 @@ public class MultiSCMSource extends SCMSource {
                   }
               }
           }
-          for (SCMHead branch : branches) {
-            listener.getLogger().printf("*  Branch `%s` exists in each SCM.%n", branch.getName());
+          if(branches.isEmpty()) {
+            listener.getLogger().println("!!! None of the branches exists in EACH SCM.");
+          } else {
+            for (SCMHead branch : branches) {
+              listener.getLogger().printf("*  Branch `%s` exists in each SCM.%n", branch.getName());
+            }
           }
           listener.getLogger().println("Done collecting branches.");
           // feed remaining branches into observer...
