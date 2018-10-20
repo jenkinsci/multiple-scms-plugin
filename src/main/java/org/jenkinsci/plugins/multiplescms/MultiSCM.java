@@ -1,27 +1,5 @@
 package org.jenkinsci.plugins.multiplescms;
 
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
-import hudson.model.Action;
-import hudson.model.Saveable;
-import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.scm.ChangeLogParser;
-import hudson.scm.PollingResult;
-import hudson.scm.PollingResult.Change;
-import hudson.scm.SCMDescriptor;
-import hudson.scm.SCMRevisionState;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import hudson.util.DescribableList;
-import jenkins.model.Jenkins;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,13 +10,39 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.sf.json.JSONObject;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
+
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Descriptor;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
+import hudson.scm.ChangeLogParser;
+import hudson.scm.NullSCM;
+import hudson.scm.PollingResult;
+import hudson.scm.PollingResult.Change;
+import hudson.scm.SCM;
+import hudson.scm.SCMDescriptor;
+import hudson.scm.SCMRevisionState;
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 
 public class MultiSCM extends SCM implements Saveable {
     private DescribableList<SCM,Descriptor<SCM>> scms =
@@ -55,17 +59,16 @@ public class MultiSCM extends SCM implements Saveable {
     }
 
     @Override
-    public SCMRevisionState calcRevisionsFromBuild(AbstractBuild<?, ?> build,
-            Launcher launcher, TaskListener listener) throws IOException,
-            InterruptedException {
+    public @CheckForNull SCMRevisionState calcRevisionsFromBuild(
+        @Nonnull Run<?,?> build, @Nullable FilePath workspace,
+        @Nullable Launcher launcher, @Nonnull TaskListener listener) throws IOException, InterruptedException {
+      MultiSCMRevisionState revisionStates = new MultiSCMRevisionState();
 
-        MultiSCMRevisionState revisionStates = new MultiSCMRevisionState();
-
-        for(SCM scm : scms) {
-            SCMRevisionState scmState = scm.calcRevisionsFromBuild
-                (build, launcher != null ? build.getWorkspace() : null, launcher, listener);
-            revisionStates.add(scm, build.getWorkspace(), build, scmState);
-        }
+      for(SCM scm : scms) {
+          SCMRevisionState scmState = scm.calcRevisionsFromBuild
+              (build, workspace, launcher, listener);
+          revisionStates.add(scm, workspace, build, scmState);
+      }
 
         return revisionStates;
     }
