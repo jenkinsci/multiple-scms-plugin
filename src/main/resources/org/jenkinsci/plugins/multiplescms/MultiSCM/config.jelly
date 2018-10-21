@@ -6,10 +6,20 @@
 	<j:set var="multiscm_instance" value="${instance}" />
 
 	<f:block>
-	  <p:hetero-list-scm name="scmList" hasHeader="true"
+  <!-- using jenkin's version now, may that fixes
+  https://issues.jenkins-ci.org/browse/JENKINS-52837
+   -->
+    <f:hetero-list name="scmList" hasHeader="true"
+                   descriptors="${descriptor.getApplicableSCMs(it)}"
+                   items="${instance.configuredSCMs}"
+                   addCaption="Add SCM"
+                   deleteCaption = "Delete SCM"/>
+<!-- 	  
+<p:hetero-list-scm name="scmList" hasHeader="true"
 	                 descriptors="${descriptor.getApplicableSCMs(it)}"
 	                 items="${instance.configuredSCMs}"
 	                 addCaption="Add SCM"
 	                 deleteCaption = "Delete SCM"/>
-	</f:block>
+ -->
+ 	</f:block>
 </j:jelly>
