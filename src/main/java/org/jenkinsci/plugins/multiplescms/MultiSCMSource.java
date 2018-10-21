@@ -36,6 +36,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.scm.NullSCM;
@@ -49,6 +50,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import jenkins.scm.api.SCMSourceDescriptor;
+import jenkins.scm.impl.NullSCMSource;
 
 /**
  * An {@code SCMSource} implementation that monitors and fetches multiple SCMs.
@@ -247,36 +249,24 @@ public class MultiSCMSource extends SCMSource {
 	    return "Multiple SCMs";
 	}
 
-	/**
-         * Returns the {@link SCMDescriptor} instances that are appropriate for the current context.
-         *
-         * @param context the current context.
-         * @return the {@link SCMDescriptor} instances
-         */
-        @SuppressWarnings("unused") // used by stapler binding
-        public static List<SCMDescriptor<?>> getScmSourceDescriptors(/*@AncestorInPath SCMSourceOwner context*/) {
-            List<SCMDescriptor<?>> result = new ArrayList<SCMDescriptor<?>>(SCM.all());
-            for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-                SCMDescriptor<?> d = iterator.next();
-                if (NullSCM.class.equals(d.clazz) || MultiSCM.class.equals(d.clazz)) {
-                    iterator.remove();
-                }
-            }
-
-            //            if (context != null && context instanceof Describable) {
-//                final Descriptor descriptor = ((Describable) context).getDescriptor();
-//                if (descriptor instanceof TopLevelItemDescriptor) {
-//                    final TopLevelItemDescriptor topLevelItemDescriptor = (TopLevelItemDescriptor) descriptor;
-//                    for (Iterator<SCMDescriptor<?>> iterator = result.iterator(); iterator.hasNext(); ) {
-//                        SCMDescriptor<?> d = iterator.next();
-//                        if (!topLevelItemDescriptor.isApplicable(d)) {
-//                            iterator.remove();
-//                        }
-//                    }
-//                }
-//            }
-            return result;
+    /**
+     * Returns the {@link SCMSourceDescriptor} instances that are appropriate
+     * for the current context.
+     *
+     * @return the {@link SCMDescriptor} instances
+     */
+    @SuppressWarnings("unused") // used by stapler binding
+    public static List<SCMSourceDescriptor> getScmSourceDescriptors() {
+      List<SCMSourceDescriptor> result = new ArrayList<SCMSourceDescriptor>(
+          ExtensionList.lookup(SCMSourceDescriptor.class));
+      for (Iterator<SCMSourceDescriptor> iterator = result.iterator(); iterator.hasNext();) {
+        SCMSourceDescriptor d = iterator.next();
+        if (NullSCMSource.class.equals(d.clazz) || MultiSCMSource.class.equals(d.clazz)) {
+          iterator.remove();
         }
-    } // DescriptorImpl
+      }
+      return result;
+    }
+  } // DescriptorImpl
 
 }
