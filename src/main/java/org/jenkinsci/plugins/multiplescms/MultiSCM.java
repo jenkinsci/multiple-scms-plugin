@@ -216,17 +216,17 @@ public class MultiSCM extends SCM implements Saveable {
             // TODO Auto-generated constructor stub
         }
 
-        public List<SCMDescriptor<?>> getApplicableSCMs(AbstractProject<?, ?> project) {
+        public List<SCMDescriptor<?>> getApplicableSCMs(Object item) {
             List<SCMDescriptor<?>> scms = new ArrayList<SCMDescriptor<?>>();
-
-            for(SCMDescriptor<?> scm : SCM._for((Job)project)) {
-                // Filter MultiSCM itself from the list of choices.
-                // Theoretically it might work, but I see no practical reason to allow
-                // nested MultiSCM configurations.
-                if(!(scm instanceof DescriptorImpl) && !(scm instanceof NullSCM.DescriptorImpl))
-                    scms.add(scm);
+            if (item instanceof Job) {
+                for(SCMDescriptor<?> scm : SCM._for((Job<?, ?>)item)) {
+                    // Filter MultiSCM itself from the list of choices.
+                    // Theoretically it might work, but I see no practical reason to allow
+                    // nested MultiSCM configurations.
+                    if(!(scm instanceof DescriptorImpl) && !(scm instanceof NullSCM.DescriptorImpl))
+                        scms.add(scm);
+                }
             }
-
             return scms;
         }
 
