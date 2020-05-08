@@ -71,18 +71,70 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <d:taglib uri="local">
+    <d:tag name="blockWrapper">
+      <st:documentation>
+        This adds a wrapper for a group of fields
+        The wrapper will be a `table` tag on Jenkins Core less than ~2.237, and a `div` tag after that
+      </st:documentation>
+
+      <j:choose>
+        <j:when test="${divBasedFormLayout}">
+          <div>
+            <d:invokeBody/>
+          </div>
+        </j:when>
+        <j:otherwise>
+          <table style="width:100%">
+            <d:invokeBody/>
+          </table>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
+    <d:tag name="row">
+      <j:choose>
+        <j:when test="${divBasedFormLayout}">
+          <div class="tr">
+            <d:invokeBody/>
+          </div>
+        </j:when>
+        <j:otherwise>
+          <tr>
+            <d:invokeBody/>
+          </tr>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
+    <d:tag name="td">
+      <j:choose>
+        <j:when test="${divBasedFormLayout}">
+          <div>
+            <d:invokeBody/>
+          </div>
+        </j:when>
+        <j:otherwise>
+          <td colspan="3">
+            <d:invokeBody/>
+          </td>
+        </j:otherwise>
+      </j:choose>
+    </d:tag>
     <d:tag name="body">
-      <div style="width:100%">
+      <local:blockWrapper style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
         <j:if test="${hasHeader}">
-          <div class="tr help-sibling">
-            <div colspan="3">
+          <local:row>
+            <local:td colspan="3">
               <div class="dd-handle">
                 <b>${descriptor.displayName}</b>
-                <f:helpLink url="${help}"/>
+                <j:if test="${divBasedFormLayout}">
+                  <f:helpLink url="${help}"/>
+                </j:if>
               </div>
-            </div>
-          </div>
+            </local:td>
+            <j:if test="${!divBasedFormLayout}">
+              <f:helpLink url="${help}"/>
+            </j:if>
+          </local:row>
           <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
           <j:if test="${help!=null}">
             <f:helpArea />
@@ -97,7 +149,7 @@ THE SOFTWARE.
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
           </div>
         </f:block>
-      </div>
+      </local:blockWrapper>
     </d:tag>
   </d:taglib>
 
@@ -128,7 +180,7 @@ THE SOFTWARE.
         <div name="${attrs.name}" title="${descriptor.displayName}" tooltip="${descriptor.tooltip}" descriptorId="${descriptor.id}">
           <j:set var="capture" value="${attrs.capture?:''}" />
           <local:body deleteCaption="${attrs.deleteCaption}">
-            <l:renderOnDemand tag="div" clazz="config-page" capture="descriptor,it,instance,${capture}">
+            <l:renderOnDemand tag="${divBasedFormLayout ? 'div' : 'tr'}" clazz="config-page" capture="descriptor,it,instance,${capture}">
               <l:ajax>
                 <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />
               </l:ajax>
