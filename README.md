@@ -1,5 +1,11 @@
 # Jenkins Multiple SCMs Plugin
 
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/multiple-scms.svg)](https://plugins.jenkins.io/multiple-scms)
+[![GitHub release](https://img.shields.io/github/release/jenkinsci/multiple-scms-plugin.svg?label=release)](https://github.com/jenkinsci/multiple-scms-plugin/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/multiple-scms.svg?color=blue)](https://plugins.jenkins.io/multiple-scms)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fmultiple-scms-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/multiple-scms-plugin/job/master/)
+[![GitHub license](https://img.shields.io/github/license/jenkinsci/multiple-scms-plugin.svg)](https://github.com/jenkinsci/multiple-scms-plugin/blob/master/LICENSE)
+
 Deprecated: Users should migrate to
 https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Plugin .
 &nbsp;Pipeline offers a better way of checking out of multiple SCMs, and
