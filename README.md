@@ -139,6 +139,10 @@ changelogs, but it's not too bad.
 
 ## Changelog
 
+### Version 0.9 (unreleased)
+
+-   TBD...
+
 ### Version 0.8 (May 21, 2021)
 
 -   Escape possible XML in SCM keys when logging
