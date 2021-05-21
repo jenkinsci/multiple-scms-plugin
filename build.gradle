@@ -34,7 +34,7 @@ jenkinsPlugin {
     shortName = 'multiple-scms'
     displayName = 'Jenkins Multiple SCMs plugin'
     // docs
-    url = 'https://github.com/jenkins/multiple-scms-plugin'
+    url = 'https://github.com/jenkinsci/multiple-scms-plugin'
     // source
     gitHubUrl = 'https://github.com/jenkinsci/multiple-scms-plugin'
 
