@@ -1,9 +1,16 @@
+# Jenkins Multiple SCMs Plugin
+
 Deprecated: Users should migrate to
 https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Plugin .
 &nbsp;Pipeline offers a better way of checking out of multiple SCMs, and
 is supported by the Jenkins core development team.
 
 Allows a job to check out sources from multiple SCM providers.
+
+## Building
+
+This plugin requires gradle in order to build.  See:
+https://github.com/jenkinsci/gradle-jpi-plugin/#usage
 
 ## Background
 
