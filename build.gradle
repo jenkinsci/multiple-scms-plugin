@@ -3,6 +3,8 @@ plugins {
 //  id 'com.github.hierynomus.license' version '0.12.1'
 }
 
+// To release, write exact number into 'version' file, commit, tag
+// After release, bump version and append '-SNAPSHOT', and commit it
 version = '0.7-SNAPSHOT'
 description = 'Allows multiple SCM plugins to be used in a job.'
 
