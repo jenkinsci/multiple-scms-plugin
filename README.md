@@ -128,6 +128,13 @@ changelogs, but it's not too bad.
 
 ## Changelog
 
+### Version 0.7 (May 21, 2021)
+
+-   Update to modern Jenkins GUI elements (table-to-div migration) which
+    requires a Jenkins core 2.264 or newer
+-   Various build system modernization to be able to publish the release
+-   Documentation imported into plugin source from the obsoleted Wiki
+
 ### Version 0.6 (Apr 3, 2016)
 
 -   Fix SCM polling
