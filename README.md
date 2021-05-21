@@ -28,6 +28,11 @@ for those capabilities.
 This plugin requires gradle in order to build.  See:
 https://github.com/jenkinsci/gradle-jpi-plugin/#usage
 
+If you have gradle version 6 or newer installed locally, you can just
+build with `gradle jpi`. For Ubuntu/Debian like systems, current distros do
+not provide a recent enough version of the tool, but an alternate PPA works:
+https://computingforgeeks.com/install-gradle-on-ubuntu-debian-from-ppa/
+
 One of the ways to do a local build in docker (e.g. if preparing a PR) is:
 
 ````
