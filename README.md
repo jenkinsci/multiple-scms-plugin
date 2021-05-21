@@ -139,9 +139,10 @@ changelogs, but it's not too bad.
 
 ## Changelog
 
-### Version 0.8 (unreleased)
+### Version 0.8 (May 21, 2021)
 
--   TBD...
+-   Escape possible XML in SCM keys when logging
+-   Various fixes to build-related files and notes
 
 ### Version 0.7 (May 21, 2021)
 

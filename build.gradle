@@ -20,7 +20,7 @@ plugins {
 // * bump version below and append '-SNAPSHOT', and
 // * git commit -m 'Prepare for 0.9-SNAPSHOT dev cycle'
 // * git push
-version = '0.8-SNAPSHOT'
+version = '0.8'
 description = 'Allows multiple SCM plugins to be used in a job.'
 
 //license {
