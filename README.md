@@ -134,6 +134,10 @@ changelogs, but it's not too bad.
 
 ## Changelog
 
+### Version 0.8 (unreleased)
+
+-   TBD...
+
 ### Version 0.7 (May 21, 2021)
 
 -   Update to modern Jenkins GUI elements (table-to-div migration) which

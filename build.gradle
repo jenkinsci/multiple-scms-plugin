@@ -5,7 +5,7 @@ plugins {
 
 // To release, write exact number into 'version' file, commit, tag
 // After release, bump version and append '-SNAPSHOT', and commit it
-version = '0.7'
+version = '0.8-SNAPSHOT'
 description = 'Allows multiple SCM plugins to be used in a job.'
 
 //license {
