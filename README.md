@@ -5,7 +5,17 @@ https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Plugin .
 &nbsp;Pipeline offers a better way of checking out of multiple SCMs, and
 is supported by the Jenkins core development team.
 
-Allows a job to check out sources from multiple SCM providers.
+This plugin allows a Jenkins job to check out sources from multiple SCM
+providers. It is useful for legacy job types (e.g. freestyle) which need
+to construct a workspace from several unrelated repositories, but does
+not intend to support Pipeline jobs and is not needed there (a series of
+`checkout` steps with an argument or a wrapping `dir` step for dedicated
+checkout directory can fulfill that role).
+
+Development of this plugin is essentially frozen, and its ability to do
+work may have relied on capabilities of various SCM and Branch Source
+plugins, some of which are known to have obsoleted or removed the code
+for those capabilities.
 
 ## Building
 
