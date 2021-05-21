@@ -22,6 +22,14 @@ for those capabilities.
 This plugin requires gradle in order to build.  See:
 https://github.com/jenkinsci/gradle-jpi-plugin/#usage
 
+One of the ways to do a local build in docker (e.g. if preparing a PR) is:
+
+````
+:; git clone git@github.com:jenkinsci/multiple-scms-plugin.git
+:; cd multiple-scms-plugin
+:; docker run --rm -u root -v "$PWD":/home/gradle/project -w /home/gradle/project gradle gradle build
+````
+
 ## Background
 
 This plugin is more of a proof-of-concept than a robust and fully
