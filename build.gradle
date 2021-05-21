@@ -3,8 +3,20 @@ plugins {
 //  id 'com.github.hierynomus.license' version '0.12.1'
 }
 
-// To release, write exact number into 'version' file, commit, tag
-// After release, bump version and append '-SNAPSHOT', and commit it
+// To release:
+// * finalize the README changelog (e.g. date of release)
+// * write exact number into 'version' below
+// * git commit, git tag, git push, git push --tags
+// * Run `gradle publish` to get artifacts uploaded
+// * Check https://repo.jenkins-ci.org (search for multiple-scms)
+// * Go to https://github.com/jenkinsci/multiple-scms-plugin/releases/new
+//   to report the new plugin version to GitHub API (so badges work, etc.)
+//   and upload the HPI file
+// After release:
+// * Prepare dummy entry in the README Changelog
+//   (new version number, date "unreleased")
+// * bump version below and append '-SNAPSHOT', and
+// * git commit+push it
 version = '0.8-SNAPSHOT'
 description = 'Allows multiple SCM plugins to be used in a job.'
 
