@@ -30,7 +30,7 @@ One of the ways to do a local build in docker (e.g. if preparing a PR) is:
 :; docker run --rm -u root -v "$PWD":/home/gradle/project -w /home/gradle/project gradle gradle build
 ````
 
-## Background
+## Background, per original author
 
 This plugin is more of a proof-of-concept than a robust and fully
 functional component. It does work in my particular build environment,
@@ -104,7 +104,8 @@ the workspace.
 ## Limitations
 
 -   Currently tested only with Mercurial and Subversion plugins, as that
-    is what I use locally.
+    is what I use locally. Many other users succeeded with Git (GitHub,
+    Bitbucket) SCM sources as well.
 -   Post-commit type triggers don't currently work (at least for
     subversion), so it is necessary to configure 'cron' type polling.
 -   Repository browser configuration is also not supported in the
