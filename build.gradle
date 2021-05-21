@@ -15,10 +15,11 @@ group = 'org.jenkins-ci.plugins'
 // Follow https://github.com/jenkinsci/gradle-jpi-plugin#configuration
 jenkinsPlugin {
     // version of Jenkins core this plugin depends on, must be 1.420 or later
-    jenkinsVersion = '2.264'
+    // after table-to-div migration, 2.264+ with 2.277.1 being the first compatible LTS
+    jenkinsVersion = '2.277.1'
     shortName = 'multiple-scms'
     displayName = 'Jenkins Multiple SCMs plugin'
-    url = 'https://plugins.jenkins.io/multiple-scms/'
+    url = 'https://wiki.jenkins.io/display/JENKINS/Multiple+SCMs+Plugin'
     gitHubUrl = 'https://github.com/jenkinsci/multiple-scms-plugin'
 
     // the developers section is optional, and corresponds to the POM developers section
