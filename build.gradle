@@ -19,7 +19,9 @@ jenkinsPlugin {
     jenkinsVersion = '2.277.1'
     shortName = 'multiple-scms'
     displayName = 'Jenkins Multiple SCMs plugin'
-    url = 'https://wiki.jenkins.io/display/JENKINS/Multiple+SCMs+Plugin'
+    // docs
+    url = 'https://github.com/jenkins/multiple-scms-plugin'
+    // source
     gitHubUrl = 'https://github.com/jenkinsci/multiple-scms-plugin'
 
     // the developers section is optional, and corresponds to the POM developers section
