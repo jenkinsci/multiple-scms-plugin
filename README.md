@@ -6,10 +6,10 @@
 [![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fmultiple-scms-plugin%2Fmaster)](https://ci.jenkins.io/job/Plugins/job/multiple-scms-plugin/job/master/)
 [![GitHub license](https://img.shields.io/github/license/jenkinsci/multiple-scms-plugin.svg)](https://github.com/jenkinsci/multiple-scms-plugin/blob/master/LICENSE)
 
-Deprecated: Users should migrate to
-https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Plugin .
-&nbsp;Pipeline offers a better way of checking out of multiple SCMs, and
-is supported by the Jenkins core development team.
+    Deprecated: Users should migrate from "legacy" job definitions to
+    https://wiki.jenkins-ci.org/display/JENKINS/Pipeline+Plugin
+    which generally offers a better way of checking out from multiple
+    SCMs, and is supported by the Jenkins core development team.
 
 This plugin allows a Jenkins job to check out sources from multiple SCM
 providers. It is useful for legacy job types (e.g. freestyle) which need
