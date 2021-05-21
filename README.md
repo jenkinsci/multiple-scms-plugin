@@ -111,7 +111,7 @@ the workspace.
 
 -   Currently tested only with Mercurial and Subversion plugins, as that
     is what I use locally. Many other users succeeded with Git (GitHub,
-    Bitbucket) SCM sources as well.
+    BitBucket) SCM sources as well.
 -   Post-commit type triggers don't currently work (at least for
     subversion), so it is necessary to configure 'cron' type polling.
 -   Repository browser configuration is also not supported in the
@@ -146,7 +146,7 @@ changelogs, but it's not too bad.
 -   Fix SCM polling
     ([JENKINS-25253](https://issues.jenkins-ci.org/browse/JENKINS-25253))
 -   Export environment variables from each SCM, instead of using only
-    the variables from the lasst SCM
+    the variables from the last SCM
     ([JENKINS-30709](https://issues.jenkins-ci.org/browse/JENKINS-30709))
 -   Fix repository browser
 
@@ -175,7 +175,7 @@ Changes not recorded.
 
 ### Version 0.2 (Jan 19, 2012)
 
--   Fix changelog parsing for subversion (and possibly others).
+-   Fix ChangeLog parsing for subversion (and possibly others).
     Extracted log component had an extra newline at the top of the file
     which made parsing fail if the document contained an `<?xml...>`
     declaration.
