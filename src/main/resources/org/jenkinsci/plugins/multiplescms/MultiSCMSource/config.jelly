@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+  xmlns:f="/lib/form">
+  <f:block>
+    <f:hetero-list name="scmSources" items="${instance.scmSources}"
+      descriptors="${descriptor.scmSourceDescriptors}" hasHeader="true" 
+      addCaption="${'%Add SCM to Multiple SCMs'}" deleteCaption="${'%Delete SCM'}"/>
+  </f:block>
+</j:jelly>

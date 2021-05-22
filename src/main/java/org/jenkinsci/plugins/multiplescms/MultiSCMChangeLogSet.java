@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.scm.RepositoryBrowser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -17,8 +18,8 @@ public class MultiSCMChangeLogSet extends ChangeLogSet<Entry> {
     private final HashMap<String, ChangeLogSetWrapper> changes;
     private final Set<String> kinds;
 
-    protected MultiSCMChangeLogSet(AbstractBuild<?, ?> build) {
-        super(build);
+    protected MultiSCMChangeLogSet(Run<?, ?> build, RepositoryBrowser<?> browser) {
+        super(build, browser);
         changes = new HashMap<String, ChangeLogSetWrapper>();
         kinds = new HashSet<String>();
     }

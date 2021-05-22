@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.multiplescms;
 
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -55,15 +56,17 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
     private class LogSplitter extends DefaultHandler {
 
         private final MultiSCMChangeLogSet changeLogs;
-        private final AbstractBuild build;
+        private final Run<?,?> build;
+        private RepositoryBrowser<?> browser;
         private final File tempFile;
         private String scmClass;
         private StringBuffer buffer;
 
-        public LogSplitter(AbstractBuild build, String tempFilePath) {
-            changeLogs = new MultiSCMChangeLogSet(build);
+        public LogSplitter(Run<?,?> build, RepositoryBrowser<?> browser, String tempFilePath) {
+            changeLogs = new MultiSCMChangeLogSet(build, browser);
             this.tempFile= new File(tempFilePath);
             this.build = build;
+            this.browser = browser;
         }
 
         @Override
@@ -107,16 +110,16 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
                     /*
                      * Due to XSTREAM serialization scmRepositoryBrowsers may be null.
                      */
-                    RepositoryBrowser<?> browser = null;
-                    if (scmRepositoryBrowsers != null) {
-                        browser = scmRepositoryBrowsers.get(scmClass);
-                    }
+//                    RepositoryBrowser<?> browser = null;
+//                    if (scmRepositoryBrowsers != null) {
+//                        browser = scmRepositoryBrowsers.get(scmClass);
+//                    }
                     if(parser != null) {
                         ChangeLogSet<? extends ChangeLogSet.Entry> cls;
                         if (browser != null) {
                             cls = parser.parse(build, browser, tempFile);
                         } else {
-                            cls = parser.parse(build, tempFile);
+                            cls = parser.parse(build, browser, tempFile);
                         }
                         changeLogs.add(scmClass, scmDisplayNames.get(scmClass), cls);
 
@@ -139,8 +142,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
     }
 
     @Override
-    public ChangeLogSet<? extends Entry> parse(AbstractBuild build, File changelogFile)
-        throws IOException, SAXException {
+    public ChangeLogSet<? extends Entry> parse(Run build, RepositoryBrowser<?> browser, File changelogFile) throws IOException, SAXException {
 
         if(scmLogParsers == null)
             return ChangeLogSet.createEmpty(build);
@@ -154,7 +156,7 @@ public class MultiSCMChangeLogParser extends ChangeLogParser {
             throw new SAXException("Could not create parser", e);
         }
 
-        LogSplitter splitter = new LogSplitter(build, changelogFile.getPath() + ".temp2");
+        LogSplitter splitter = new LogSplitter(build, browser, changelogFile.getPath() + ".temp2");
         parser.parse(changelogFile, splitter);
         return splitter.getChangeLogSets();
     }
